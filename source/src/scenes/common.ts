@@ -25,8 +25,12 @@ export function blobOutline(rx: number, rz: number, seed: number, n = 13, jitter
 // An organic patch of ground the scene stands on, so each story has its own spot on the meadow.
 export function patch(ctx: Ctx, cx: number, cz: number, color: V3, edge: V3, rx: number, rz: number, seed: number): number {
   const g = new GeoBuilder();
-  g.prism(blobOutline(rx * 1.045, rz * 1.045, seed + 1), 0.1, edge, T(cx, ctx.TOP, cz));
-  g.prism(blobOutline(rx, rz, seed), 0.14, color, T(cx, ctx.TOP, cz));
+  // One outline, scaled for the rim: two independently wiggled outlines would
+  // cross each other and z-fight where the walls intersect.
+  const out = blobOutline(rx, rz, seed);
+  const rim = out.map(([x, z]) => [x * 1.05, z * 1.05] as [number, number]);
+  g.prism(rim, 0.1, edge, T(cx, ctx.TOP, cz));
+  g.prism(out, 0.14, color, T(cx, ctx.TOP, cz));
   ctx.addObj(g, new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as M4);
   return ctx.TOP + 0.14;
 }

@@ -290,11 +290,14 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       const l = Math.hypot(dx, dz) || 1;
       const nx = -dz / l, nz = dx / l;
       g.quad(
-        [a[0] + nx * W, y, a[2] + nz * W], [a[0] - nx * W, y, a[2] - nz * W],
-        [b[0] - nx * W, y, b[2] - nz * W], [b[0] + nx * W, y, b[2] + nz * W],
+        [a[0] - nx * W, y, a[2] - nz * W], [a[0] + nx * W, y, a[2] + nz * W],
+        [b[0] + nx * W, y, b[2] + nz * W], [b[0] - nx * W, y, b[2] - nz * W],
         [0.42, 0.42, 0.46],
       );
     }
+    // joint caps: discs fill the wedge gaps where quad segments meet on curves
+    // (same colour and height as the quads, so the coplanar overlap is invisible)
+    for (const p of roadPath) g.disc(W, 10, [0.42, 0.42, 0.46], T(p[0], y, p[2]));
     ctx.addObj(g, I);
   }
   const roadAt = (u: number): { x: number; z: number; heading: number } => {
@@ -797,6 +800,11 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   // internal test hook for automated checks
   (window as unknown as Record<string, unknown>).__nw = {
     cam: () => ({ tx, tz, dist, polar, azim, cur, userActive, hold, phase: phase.kind }),
+    look: (x: number, z: number, az: number, pol: number, d: number) => {
+      tx = x; tz = z; tTx = x; tTz = z;
+      azim = az; polar = pol; dist = d; tAzim = az; tPolar = pol; tDist = d;
+      touched();
+    },
     cars: () => carState.map((c) => ({ ...c })),
     plane: () => ({ ...planeState }),
   };

@@ -1,3 +1,4 @@
+import { BUILD_AT } from './buildStamp';
 // Story facts and the market snapshot. Everything shown in the world and in the
 // info panels comes from here, so a fact is changed in exactly one place.
 // Every figure below was read from the linked source on 20 Nov 2026.
@@ -18,7 +19,7 @@ export interface Story {
 // When this page was last built, set by hand at build time and shown in the
 // info tab. Separate from each story's own "as of" time: rebuilding the page
 // does not make the news fresher.
-export const BUILD = { at: 'Fri 20 Nov 2026, 1:25 PM IST' };
+export const BUILD = { at: BUILD_AT };
 
 // Market snapshot: Business Standard live blog, "As of 12:00 PM" update and the
 // "As of 11:00 AM" update. Not live. The page does not refresh these numbers.
