@@ -2,11 +2,11 @@
 import { GeoBuilder, M4, V3, m4mul, m4rotX, m4rotZ, m4scale } from '../geo';
 import { C } from '../palette';
 import type { Ctx } from '../world';
-import { T, tile } from './common';
+import { T, patch } from './common';
 import { fitText, roundRect, FONT } from './text';
 
 export function buildGta(ctx: Ctx, at: { x: number; z: number }) {
-  const Y = tile(ctx, at.x, at.z, [0.86, 0.8, 0.9], [0.62, 0.55, 0.72]);
+  const Y = patch(ctx, at.x, at.z, [0.86, 0.8, 0.9], [0.62, 0.55, 0.72], 6, 6, 11);
   const RM = m4mul(T(at.x, Y, at.z + 0.3), m4scale(1.5, 1.5, 1.5));
   const L = (x: number, y: number, z: number): M4 => m4mul(RM, T(x, y, z));
   const mul = m4mul;
@@ -139,10 +139,10 @@ export function buildGta(ctx: Ctx, at: { x: number; z: number }) {
   });
   {
     const g = new GeoBuilder();
-    g.cyl(0.08, 0.08, 4.6, 8, [0.4, 0.38, 0.42], T(at.x - 3.0, Y, at.z - 3.5));
-    g.cyl(0.08, 0.08, 4.6, 8, [0.4, 0.38, 0.42], T(at.x + 3.0, Y, at.z - 3.5));
+    g.cyl(0.08, 0.08, 4.0, 8, [0.4, 0.38, 0.42], T(at.x - 3.0, Y, at.z - 3.5));
+    g.cyl(0.08, 0.08, 4.0, 8, [0.4, 0.38, 0.42], T(at.x + 3.0, Y, at.z - 3.5));
     ctx.addObj(g, new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as M4);
   }
-  ctx.addDecal({ tex: sign, model: T(at.x, Y + 5.2, at.z - 3.45), w: 8.4, h: 2.1, billboard: false });
+  ctx.addDecal({ tex: sign, model: T(at.x, Y + 5.2, at.z - 3.45), w: 8.4, h: 2.1, billboard: true });
   void FONT;
 }

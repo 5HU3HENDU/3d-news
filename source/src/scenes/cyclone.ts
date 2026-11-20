@@ -3,7 +3,7 @@
 import { GeoBuilder, M4, V3, m4invert, m4mul, m4rotX, m4rotY, m4rotZ, m4scale } from '../geo';
 import { C } from '../palette';
 import type { Ctx } from '../world';
-import { T, tile } from './common';
+import { T, patch } from './common';
 import { fitText, roundRect } from './text';
 
 const FONT5: Record<string, string[]> = {
@@ -16,7 +16,7 @@ const FONT5: Record<string, string[]> = {
 };
 
 export function buildCyclone(ctx: Ctx, at: { x: number; z: number }) {
-  const Y = tile(ctx, at.x, at.z, [0.78, 0.9, 0.93], [0.52, 0.7, 0.78]);
+  const Y = patch(ctx, at.x, at.z, [0.78, 0.9, 0.93], [0.52, 0.7, 0.78], 11, 8, 12);
   const dx = at.x - 4.8, dz = at.z - 1.0;       // scene was designed around local (4.8, 1.0)
   const TT = (x: number, y: number, z: number) => T(x + dx, y, z + dz);
   const I = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as M4;
@@ -190,9 +190,9 @@ export function buildCyclone(ctx: Ctx, at: { x: number; z: number }) {
   });
   {
     const g = new GeoBuilder();
-    g.cyl(0.08, 0.08, 4.4, 8, [0.4, 0.42, 0.46], T(at.x - 3.6, Y, at.z - 5.4));
-    g.cyl(0.08, 0.08, 4.4, 8, [0.4, 0.42, 0.46], T(at.x + 3.6, Y, at.z - 5.4));
+    g.cyl(0.08, 0.08, 3.8, 8, [0.4, 0.42, 0.46], T(at.x - 3.6, Y, at.z - 5.4));
+    g.cyl(0.08, 0.08, 3.8, 8, [0.4, 0.42, 0.46], T(at.x + 3.6, Y, at.z - 5.4));
     ctx.addObj(g, I);
   }
-  ctx.addDecal({ tex: banner, model: T(at.x, Y + 5.0, at.z - 5.35), w: 8.4, h: 2.1 });
+  ctx.addDecal({ tex: banner, model: T(at.x, Y + 5.0, at.z - 5.35), w: 8.4, h: 2.1, billboard: true });
 }

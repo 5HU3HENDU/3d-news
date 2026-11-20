@@ -3,11 +3,11 @@ import { GeoBuilder, M4, V3, m4mul, m4rotX, m4rotY, m4rotZ, m4scale } from '../g
 import { C } from '../palette';
 import type { Ctx } from '../world';
 import { CRICKET } from '../data';
-import { T, tile } from './common';
+import { T, patch } from './common';
 import { fitText, roundRect, FONT } from './text';
 
 export function buildCricket(ctx: Ctx, at: { x: number; z: number }) {
-  const Y = tile(ctx, at.x, at.z, [0.74, 0.88, 0.62], [0.5, 0.7, 0.4]);
+  const Y = patch(ctx, at.x, at.z, [0.74, 0.88, 0.62], [0.5, 0.7, 0.4], 9, 9, 13);
   const X = (x: number, y: number, z: number): M4 => T(at.x + x, Y + y, at.z + z);
   const I = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as M4;
   const oval = (r: number, y: number, col: V3, sx = 1.18) => {
@@ -131,9 +131,9 @@ export function buildCricket(ctx: Ctx, at: { x: number; z: number }) {
   });
   {
     const g = new GeoBuilder();
-    g.cyl(0.09, 0.09, 3.3, 8, [0.4, 0.42, 0.46], X(-3.6, 0, -7.9));
-    g.cyl(0.09, 0.09, 3.3, 8, [0.4, 0.42, 0.46], X(3.6, 0, -7.9));
+    g.cyl(0.09, 0.09, 2.4, 8, [0.4, 0.42, 0.46], X(-3.6, 0, -7.9));
+    g.cyl(0.09, 0.09, 2.4, 8, [0.4, 0.42, 0.46], X(3.6, 0, -7.9));
     ctx.addObj(g, I);
   }
-  ctx.addDecal({ tex: board, model: X(0, 4.6, -7.9), w: 8.2, h: 4.1 });
+  ctx.addDecal({ tex: board, model: X(0, 4.6, -7.9), w: 8.2, h: 4.1, billboard: true });
 }

@@ -1,11 +1,12 @@
-// Miniature news world engine: one flat canvas, four 3D miniature scenes, a slow camera tour.
+// Miniature news world engine: one floating meadow, four 3D miniature scenes, a roaming camera.
 // Plain WebGL, no dependencies. Scenes live in ./scenes and draw through the Ctx below.
 import {
   GeoBuilder, M4, V3, m4ident, m4invert, m4lookAt, m4mul, m4normalMat, m4perspective,
-  m4rotY, m4scale, m4translate, norm3, sub3,
+  m4rotX, m4rotY, m4rotZ, m4scale, m4translate, norm3, sub3,
 } from './geo';
 import { C } from './palette';
 import type { SceneId } from './data';
+import { blobOutline, seeded } from './scenes/common';
 import { buildGta } from './scenes/gta';
 import { buildCyclone } from './scenes/cyclone';
 import { buildCricket } from './scenes/cricket';
@@ -14,12 +15,10 @@ import { buildMarket } from './scenes/market';
 export type { SceneId };
 export interface WorldHandle {
   dispose(): void;
-  flyTo(id: SceneId): void;
   setHold(hold: boolean): void;
 }
 export interface WorldEvents {
   onPick(id: SceneId): void;
-  onFocus(id: SceneId): void;
 }
 
 export type AnimKind = 'static' | 'bob' | 'spin' | 'screen' | 'sway' | 'walk';
@@ -59,14 +58,21 @@ export interface Ctx {
   onFrame(fn: (t: number) => void): void;
 }
 
-// Scene centres on the flat canvas (x, z), and the hit radius used for taps.
+// Scene centres on the meadow (x, z), loosely scattered rather than gridded.
 export const SPOTS: Record<SceneId, { x: number; z: number }> = {
-  gta: { x: -14, z: -14 },
-  cyclone: { x: 14, z: -14 },
-  cricket: { x: 14, z: 14 },
-  market: { x: -14, z: 14 },
+  gta: { x: -19, z: -10 },
+  cyclone: { x: 10, z: -13 },
+  cricket: { x: 14, z: 11 },
+  market: { x: -15, z: 11 },
 };
 export const TOUR: SceneId[] = ['gta', 'cyclone', 'cricket', 'market'];
+// Tap target half-extents per scene (x, z).
+const PICK_BOX: Record<SceneId, { rx: number; rz: number }> = {
+  gta: { rx: 7, rz: 6.5 },
+  cyclone: { rx: 11.5, rz: 8.5 },
+  cricket: { rx: 9.5, rz: 9.5 },
+  market: { rx: 7, rz: 7.5 },
+};
 const TOP = 1.2;
 
 // ---------- shaders ----------
@@ -142,11 +148,28 @@ function program(gl: WebGLRenderingContext, v: string, f: string): WebGLProgram 
 
 const ease = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
 const mix = (a: number, b: number, k: number) => a + (b - a) * k;
+const wrapPi = (a: number) => ((a + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+
+// Closed Catmull-Rom loop sampled to a polyline.
+function sampleLoop(pts: V3[], per: number): V3[] {
+  const out: V3[] = [];
+  const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+    for (let j = 0; j < per; j++) {
+      const u = j / per, u2 = u * u, u3 = u2 * u;
+      const f = (a: number, b: number, c: number, d: number) =>
+        0.5 * ((2 * b) + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u2 + (-a + 3 * b - 3 * c + d) * u3);
+      out.push([f(p0[0], p1[0], p2[0], p3[0]), p1[1], f(p0[2], p1[2], p2[2], p3[2])]);
+    }
+  }
+  return out;
+}
 
 // ---------- the world ----------
 export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHandle {
   const gl = canvas.getContext('webgl', { alpha: true, antialias: true, preserveDrawingBuffer: true }) as WebGLRenderingContext | null;
-  if (!gl) return { dispose() {}, flyTo() {}, setHold() {} };
+  if (!gl) return { dispose() {}, setHold() {} };
 
   const prog = program(gl, VERT, FRAG);
   const dprog = program(gl, DVERT, DFRAG);
@@ -228,26 +251,198 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     onFrame(fn) { frameHooks.push(fn); },
   };
 
-  // ---------- the flat canvas ----------
+  const I = m4ident();
+  const T = m4translate;
+
+  // ---------- the floating meadow ----------
+  // One organic island: a grass blob on top, tapering soil layers and a rocky tip below.
+  {
+    const grass = new GeoBuilder();
+    grass.prism(blobOutline(36, 34, 5, 18, 0.08), 1.3, C.grass, T(0, TOP - 1.3, 0));
+    ctx.addObj(grass, I);
+    const soil1 = new GeoBuilder();
+    soil1.prism(blobOutline(36 * 0.82, 34 * 0.82, 6, 18, 0.12), 1.3, C.soil, T(0, TOP - 2.6, 0));
+    ctx.addObj(soil1, I);
+    const soil2 = new GeoBuilder();
+    soil2.prism(blobOutline(36 * 0.6, 34 * 0.6, 7, 16, 0.14), 1.3, [0.47, 0.32, 0.22], T(0, TOP - 3.9, 0));
+    ctx.addObj(soil2, I);
+    const soil3 = new GeoBuilder();
+    soil3.prism(blobOutline(36 * 0.38, 34 * 0.38, 8, 14, 0.16), 1.5, [0.4, 0.27, 0.19], T(0, TOP - 5.4, 0));
+    ctx.addObj(soil3, I);
+    const tip = new GeoBuilder();
+    tip.cyl(0.2, 8.5, 2.6, 12, [0.36, 0.25, 0.18], T(0, TOP - 8.0, 0));
+    ctx.addObj(tip, I);
+  }
+
+  // ---------- the winding road that ties the stories together ----------
+  // Winding loop threaded through the gaps between scenes (clearance-checked).
+  const ROAD_CTRL: V3[] = [
+    [-14, 0, -0.7], [-5.8, 0, -10.6], [-7, 0, -23.2], [13.6, 0, -24.9], [24, 0, -16],
+    [27.1, 0, 3.6], [25.8, 0, 6.8], [26.5, 0, 13], [21.2, 0, 21], [9, 0, 27.4], [-1.2, 0, 13.2], [-9.1, 0, 2.9],
+  ];
+  const roadPath = sampleLoop(ROAD_CTRL, 24);
   {
     const g = new GeoBuilder();
-    // soil slab under the whole board, so it reads as a floating flat canvas
-    g.box(74, 2.2, 62, C.soil, m4translate(0, TOP - 1.1 - 0.12, 0));
-    g.box(74.6, 0.3, 62.6, [0.45, 0.31, 0.21], m4translate(0, TOP - 0.3, 0));
-    // paper-like top surface
-    g.box(73, 0.06, 61, [0.93, 0.91, 0.84], m4translate(0, TOP - 0.03, 0));
-    ctx.addObj(g, m4ident());
+    const W = 0.85, y = TOP + 0.05;
+    for (let i = 0; i < roadPath.length; i++) {
+      const a = roadPath[i], b = roadPath[(i + 1) % roadPath.length];
+      const dx = b[0] - a[0], dz = b[2] - a[2];
+      const l = Math.hypot(dx, dz) || 1;
+      const nx = -dz / l, nz = dx / l;
+      g.quad(
+        [a[0] + nx * W, y, a[2] + nz * W], [a[0] - nx * W, y, a[2] - nz * W],
+        [b[0] - nx * W, y, b[2] - nz * W], [b[0] + nx * W, y, b[2] + nz * W],
+        [0.42, 0.42, 0.46],
+      );
+    }
+    ctx.addObj(g, I);
   }
-  // soft shadows of clouds drifting is overkill; a few clouds float above the canvas
+  const roadAt = (u: number): { x: number; z: number; heading: number } => {
+    const n = roadPath.length;
+    const f = ((u % 1) + 1) % 1 * n;
+    const i = Math.floor(f) % n, k = f - Math.floor(f);
+    const a = roadPath[i], b = roadPath[(i + 1) % n];
+    const x = a[0] + (b[0] - a[0]) * k, z = a[2] + (b[2] - a[2]) * k;
+    return { x, z, heading: Math.atan2(b[0] - a[0], b[2] - a[2]) };
+  };
+  // a few cars, sparse and unhurried
+  const carCols: V3[] = [[0.85, 0.25, 0.2], [0.25, 0.45, 0.85], [0.95, 0.75, 0.2]];
+  const carState: { x: number; z: number }[] = [];
+  for (let k = 0; k < 3; k++) {
+    const g = new GeoBuilder();
+    const col = carCols[k];
+    g.box(0.55, 0.22, 1.15, col, T(0, 0.2, 0));               // body
+    g.box(0.46, 0.2, 0.55, col, T(0, 0.4, -0.06));            // cabin
+    g.box(0.47, 0.12, 0.3, [0.7, 0.85, 0.95], T(0, 0.4, 0.16)); // windshield band
+    for (const [wx, wz] of [[-0.28, 0.36], [0.28, 0.36], [-0.28, -0.36], [0.28, -0.36]] as [number, number][]) {
+      g.cyl(0.11, 0.11, 0.08, 10, [0.15, 0.15, 0.17], m4mul(T(wx, 0.11, wz), m4rotZ(Math.PI / 2)));
+    }
+    const speed = 0.016 + k * 0.004, off = k / 3;
+    carState.push({ x: 0, z: 0 });
+    ctx.addObj(g, I, {
+      update: (t) => {
+        const p = roadAt(t * speed + off);
+        carState[k].x = p.x; carState[k].z = p.z;
+        return m4mul(T(p.x, TOP + 0.05 + Math.abs(Math.sin(t * 7 + k)) * 0.015, p.z), m4rotY(p.heading));
+      },
+    });
+  }
+
+  // ---------- a small plane crossing the sky now and then ----------
+  const planeFrom: V3 = [-52, TOP + 13.5, -36];
+  const planeTo: V3 = [52, TOP + 15, 30];
+  const PLANE_PERIOD = 30, PLANE_FLY = 15;
+  const planeHeading = Math.atan2(planeTo[0] - planeFrom[0], planeTo[2] - planeFrom[2]);
+  const planeState = { visible: false };
+  function planeM(t: number): M4 {
+    const u = (t % PLANE_PERIOD) / PLANE_FLY;
+    if (u >= 1) { planeState.visible = false; return T(0, -80, 0); }
+    planeState.visible = true;
+    const x = planeFrom[0] + (planeTo[0] - planeFrom[0]) * u;
+    const y = planeFrom[1] + (planeTo[1] - planeFrom[1]) * u + Math.sin(t * 0.9) * 0.4;
+    const z = planeFrom[2] + (planeTo[2] - planeFrom[2]) * u;
+    return m4mul(T(x, y, z), m4mul(m4rotY(planeHeading), m4rotZ(0.12)));
+  }
+  {
+    const g = new GeoBuilder();
+    const red: V3 = [0.85, 0.3, 0.25], cream: V3 = [0.96, 0.93, 0.85];
+    g.box(0.5, 0.5, 2.2, red, T(0, 0, 0));                                  // fuselage
+    g.cyl(0.24, 0.02, 0.55, 10, cream, m4mul(T(0, 0, 1.05), m4rotX(Math.PI / 2))); // nose cone, tip forward
+    g.box(3.6, 0.08, 0.75, cream, T(0, 0.12, 0.25));                         // wings
+    g.box(1.25, 0.07, 0.45, cream, T(0, 0.18, -1.0));                        // tailplane
+    g.box(0.08, 0.5, 0.5, red, T(0, 0.42, -0.95));                           // fin
+    ctx.addObj(g, I, { update: (t) => planeM(t) });
+    const prop = new GeoBuilder();
+    prop.box(0.1, 1.15, 0.06, [0.25, 0.25, 0.28], T(0, 0, 0));
+    prop.box(1.15, 0.1, 0.06, [0.25, 0.25, 0.28], T(0, 0, 0));
+    ctx.addObj(prop, I, { update: (t) => (planeState.visible ? m4mul(planeM(t), m4mul(T(0, 0, 1.7), m4rotZ(t * 22))) : T(0, -80, 0)) });
+  }
+
+  // ---------- clouds, birds and meadow dressing ----------
   const cloudSpots: [number, number, number, number][] = [
-    [-30, 10, -26, 1.5], [0, 11, -4, 1.4], [3, 12, -27, 1.8], [-3, 11, 28, 1.5], [33, 10, -2, 1.2], [-33, 10.5, 2, 1.3],
+    [-28, 10, -24, 1.5], [0, 11, -6, 1.4], [4, 12, -26, 1.8], [-4, 11, 27, 1.5], [30, 10, -4, 1.2], [-31, 10.5, 3, 1.3], [26, 11.5, 20, 1.4],
   ];
   for (const [x, y, z, s] of cloudSpots) {
     const g = new GeoBuilder();
-    g.sphere(0.75, 10, 6, C.cloud, m4mul(m4translate(0, 0, 0), m4scale(1.5, 0.75, 1)));
-    g.sphere(0.55, 10, 6, C.cloud, m4mul(m4translate(0.95, 0.1, 0.15), m4scale(1.2, 0.7, 1)));
-    g.sphere(0.5, 10, 6, C.cloud, m4mul(m4translate(-0.9, 0.05, -0.1), m4scale(1.1, 0.65, 1)));
-    ctx.addObj(g, m4mul(m4translate(x, y, z), m4scale(s, s, s)), { anim: 'bob', phase: x, amp: 0.3 });
+    g.sphere(0.75, 10, 6, C.cloud, m4mul(T(0, 0, 0), m4scale(1.5, 0.75, 1)));
+    g.sphere(0.55, 10, 6, C.cloud, m4mul(T(0.95, 0.1, 0.15), m4scale(1.2, 0.7, 1)));
+    g.sphere(0.5, 10, 6, C.cloud, m4mul(T(-0.9, 0.05, -0.1), m4scale(1.1, 0.65, 1)));
+    ctx.addObj(g, m4mul(T(x, y, z), m4scale(s, s, s)), { anim: 'bob', phase: x, amp: 0.3 });
+  }
+  // birds on a lazy circuit
+  for (let b = 0; b < 3; b++) {
+    const g = new GeoBuilder();
+    g.sphere(0.09, 8, 6, [0.2, 0.2, 0.24]);
+    g.box(0.5, 0.03, 0.14, [0.2, 0.2, 0.24], m4mul(T(-0.3, 0.04, 0), m4rotZ(0.35)));
+    g.box(0.5, 0.03, 0.14, [0.2, 0.2, 0.24], m4mul(T(0.3, 0.04, 0), m4rotZ(-0.35)));
+    const cx = -6 + b * 9, cz = b % 2 ? 6 : -8, r = 9 + b * 2.5, sp = 0.05 + b * 0.012, ph = b * 2.1;
+    ctx.addObj(g, I, {
+      update: (t) => {
+        const a = t * sp + ph;
+        const x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r;
+        return m4mul(T(x, TOP + 9.5 + Math.sin(t * 1.3 + ph) * 0.5, z), m4rotY(-a));
+      },
+    });
+  }
+  // bushes, flowers, rocks and a pond, kept clear of scenes and the road
+  {
+    const clearOf = (x: number, z: number) => {
+      for (const id of TOUR) {
+        const b = PICK_BOX[id];
+        if (Math.hypot(x - SPOTS[id].x, z - SPOTS[id].z) < Math.max(b.rx, b.rz) + 1.6) return false;
+      }
+      for (let i = 0; i < roadPath.length; i += 2) {
+        if (Math.hypot(x - roadPath[i][0], z - roadPath[i][2]) < 2.3) return false;
+      }
+      return Math.hypot(x, z) < 29;
+    };
+    const rnd = seeded(23);
+    const bush = new GeoBuilder();
+    let placed = 0, guard = 0;
+    while (placed < 9 && guard++ < 80) {
+      const x = (rnd() * 2 - 1) * 29, z = (rnd() * 2 - 1) * 29;
+      if (!clearOf(x, z)) continue;
+      const s = 0.5 + rnd() * 0.5;
+      bush.sphere(0.5, 9, 6, C.grassDark, m4mul(T(x, TOP + 0.25 * s, z), m4scale(s * 1.3, s, s * 1.3)));
+      bush.sphere(0.32, 8, 5, C.grassDark, m4mul(T(x + 0.5 * s, TOP + 0.2 * s, z + 0.3 * s), m4scale(s, s * 0.8, s)));
+      placed++;
+    }
+    ctx.addObj(bush, I);
+    const flowers = new GeoBuilder();
+    placed = 0; guard = 0;
+    const petal: V3[] = [[0.95, 0.5, 0.6], [0.95, 0.85, 0.3], [0.97, 0.97, 0.95], [0.7, 0.5, 0.9]];
+    while (placed < 14 && guard++ < 120) {
+      const x = (rnd() * 2 - 1) * 29, z = (rnd() * 2 - 1) * 29;
+      if (!clearOf(x, z)) continue;
+      flowers.cyl(0.02, 0.02, 0.22, 5, C.plant, T(x, TOP, z));
+      flowers.sphere(0.09, 7, 5, petal[placed % petal.length], T(x, TOP + 0.26, z));
+      placed++;
+    }
+    ctx.addObj(flowers, I, { anim: 'sway', phase: 2, amp: 0.05 });
+    const rocks = new GeoBuilder();
+    placed = 0; guard = 0;
+    while (placed < 5 && guard++ < 60) {
+      const x = (rnd() * 2 - 1) * 28, z = (rnd() * 2 - 1) * 28;
+      if (!clearOf(x, z)) continue;
+      const s = 0.3 + rnd() * 0.35;
+      rocks.sphere(0.4, 8, 5, [0.6, 0.6, 0.62], m4mul(T(x, TOP + 0.1 * s, z), m4scale(s * 1.3, s * 0.8, s)));
+      placed++;
+    }
+    ctx.addObj(rocks, I);
+    { // pond
+      const g = new GeoBuilder();
+      g.disc(2.4, 26, [0.45, 0.72, 0.85], T(0.5, TOP + 0.02, -2));
+      g.disc(1.9, 26, [0.35, 0.62, 0.78], T(0.5, TOP + 0.035, -2));
+      ctx.addObj(g, I, { wave: 0.02 });
+    }
+    // two round trees
+    for (const [x, z, s] of [[3.5, 16.5, 1.0], [-5, -18.5, 1.2]] as [number, number, number][]) {
+      const g = new GeoBuilder();
+      g.cyl(0.14, 0.18, 1.1, 8, C.trunk, T(x, TOP, z));
+      g.sphere(0.9, 10, 7, C.palm, T(x, TOP + 1.5 * s, z));
+      g.sphere(0.6, 9, 6, C.grassDark, m4mul(T(x + 0.55 * s, TOP + 1.15 * s, z + 0.3), m4scale(1, 0.9, 1)));
+      ctx.addObj(g, I, { anim: 'sway', phase: x, amp: 0.04 });
+    }
   }
 
   buildGta(ctx, SPOTS.gta);
@@ -256,7 +451,6 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   buildMarket(ctx, SPOTS.market);
 
   // ---------- per-frame model matrix ----------
-  const T = m4translate;
   function modelFor(o: Obj, t: number): M4 {
     if (o.update) { const r = o.update(t); if (r) return r; }
     let m = o.base;
@@ -289,54 +483,97 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     return m;
   }
 
-  // ---------- camera and tour ----------
-  const CLOSE = 21, FAR = 70;
-  const close = (id: SceneId) => ({ x: SPOTS[id].x, z: SPOTS[id].z + 0.6 });
-  const azimFor = (_i: number) => 0;
-  // displayed camera and its targets (user drags change the targets)
-  let tx = close('gta').x, tz = close('gta').z; const ty = TOP + 2.4;
-  let azim = azimFor(0), polar = 0.86, dist = CLOSE;
+  // ---------- camera: a roaming visitor ----------
+  // Each visit: arrive facing the scene's front (headline beat), then slowly
+  // circle it to show the sides, pull back, and wander to a random other story.
+  const FAR = 58;
+  const HOLD = 0.24; // first slice of a dwell: hold the readable framing
+  const close = (id: SceneId) => ({ x: SPOTS[id].x, z: SPOTS[id].z + 0.4 });
+  const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+
+  let cur: SceneId = 'gta';
+  const start = close(cur);
+  let tx = start.x, tz = start.z; const ty = TOP + 2.4;
+  let azim = 0, polar = 1.0, dist = 21;
   let tAzim = azim, tPolar = polar, tDist = dist;
   let tTx = tx, tTz = tz;
   let lastTouch = -1e9;
   let hold = false;
-  let idx = 0;
-  type Phase = { kind: 'dwell' | 'travel'; t0: number; dur: number; from: { x: number; z: number; d: number; az: number; po: number }; to?: { x: number; z: number; az: number }; };
-  let phase: Phase = { kind: 'dwell', t0: -1, dur: 9, from: { x: tx, z: tz, d: CLOSE, az: azim, po: polar } };
-  let phaseInit = false;
-  let focusSent: SceneId | null = null;
 
-  function startTravel(now: number, next: number) {
-    idx = next;
-    const to = close(TOUR[next]);
-    phase = {
-      kind: 'travel', t0: now, dur: 6.5,
-      from: { x: tTx, z: tTz, d: tDist, az: tAzim, po: tPolar },
-      to: { x: to.x, z: to.z, az: azimFor(next) },
+  interface Dwell {
+    kind: 'dwell'; t0: number; dur: number;
+    az0: number; sweep: number; po0: number; po1: number; d0: number; d1: number;
+  }
+  interface Travel {
+    kind: 'travel'; t0: number; dur: number;
+    from: { x: number; z: number; az: number; po: number; d: number };
+    to: { x: number; z: number; az: number; po: number; d: number };
+  }
+  type Phase = Dwell | Travel;
+
+  function dwellParams(now: number): Dwell {
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    return {
+      kind: 'dwell', t0: now, dur: rnd(12000, 14500),
+      az0: wrapPi(rnd(-0.4, 0.4)),            // arrive from roughly the front
+      sweep: dir * rnd(0.85, 1.45),           // then circle off to one side
+      po0: rnd(0.92, 1.04),                   // entry: higher, readable
+      po1: rnd(1.14, 1.26),                   // orbit: low enough to show the sides
+      d0: rnd(18.5, 21), d1: rnd(20, 23),
     };
+  }
+  function pickNext(exclude: SceneId): SceneId {
+    const others = TOUR.filter((s) => s !== exclude);
+    return others[Math.floor(Math.random() * others.length)];
+  }
+  let phase: Phase = dwellParams(0);
+  let pendingDwell: Dwell | null = null;
+  let phaseInit = false;
+
+  function startTravel(now: number, next: SceneId) {
+    const c = close(next);
+    const d = dwellParams(0);
+    phase = {
+      kind: 'travel', t0: now, dur: 7000,
+      from: { x: tTx, z: tTz, az: tAzim, po: tPolar, d: tDist },
+      to: { x: c.x, z: c.z, az: d.az0, po: d.po0, d: d.d0 },
+    };
+    pendingDwell = d;
+    cur = next;
   }
   function tourStep(now: number) {
     if (!phaseInit) { phase.t0 = now; phaseInit = true; }
-    const u = (now - phase.t0) / 1000 / phase.dur;
+    const u = (now - phase.t0) / phase.dur;
     if (phase.kind === 'dwell') {
-      // tiny drift so the dwell never looks frozen
-      tAzim = azimFor(idx) + Math.sin(now / 2600) * 0.03;
-      if (u >= 1) startTravel(now, (idx + 1) % TOUR.length);
+      const d = phase;
+      const c = close(cur);
+      tTx = c.x; tTz = c.z;
+      if (u < HOLD) {
+        // headline beat: steady, readable framing with a hint of life
+        tAzim = d.az0 + Math.sin(now / 2600) * 0.03;
+        tPolar = d.po0;
+        tDist = d.d0;
+      } else {
+        const k = ease(Math.min(1, (u - HOLD) / (1 - HOLD)));
+        tAzim = d.az0 + d.sweep * k;
+        tPolar = mix(d.po0, d.po1, k);
+        tDist = mix(d.d0, d.d1, k) + Math.sin(k * Math.PI) * 1.1;
+      }
+      if (u >= 1) startTravel(now, pickNext(cur));
       return;
     }
     const k = Math.min(1, u), e = ease(k);
-    const f = phase.from, to = phase.to!;
+    const f = phase.from, to = phase.to;
     tTx = mix(f.x, to.x, e); tTz = mix(f.z, to.z, e);
-    const base = mix(f.d, CLOSE, e);
-    const bump = Math.max(0, FAR - (f.d + CLOSE) / 2) * Math.sin(Math.PI * k);
-    tDist = base + bump;
-    tPolar = mix(f.po, 0.86, e) - 0.12 * Math.sin(Math.PI * k);
-    tAzim = mix(f.az, to.az, e);
-    if (k >= 1) phase = { kind: 'dwell', t0: now, dur: 9, from: { x: tTx, z: tTz, d: CLOSE, az: tAzim, po: tPolar } };
-  }
-  function resumeFrom(now: number) {
-    // after the user lets go: glide to the next scene from wherever the camera is
-    startTravel(now, (nearestIdx() + 1) % TOUR.length);
+    const bump = Math.max(0, FAR - (f.d + to.d) / 2) * Math.sin(Math.PI * k);
+    tDist = mix(f.d, to.d, e) + bump;
+    tPolar = mix(f.po, to.po, e) - 0.28 * Math.sin(Math.PI * k); // rise overhead midway, then sink back down
+    tAzim = f.az + wrapPi(to.az - f.az) * e;
+    if (k >= 1 && pendingDwell) {
+      pendingDwell.t0 = now;
+      phase = pendingDwell;
+      pendingDwell = null;
+    }
   }
   function nearestIdx() {
     let best = 0, bd = 1e9;
@@ -345,6 +582,10 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       if (d < bd) { bd = d; best = i; }
     });
     return best;
+  }
+  function resumeFrom(now: number) {
+    // after the user lets go: wander to a random story that isn't the nearest one
+    startTravel(now, pickNext(TOUR[nearestIdx()]));
   }
   let userActive = false;
   function touched() { lastTouch = performance.now(); userActive = true; }
@@ -370,12 +611,12 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       const dx = x - p.x, dy = y - p.y;
       if (Math.hypot(x - downX, y - downY) > 7) { moved = true; touched(); }
       if (moved) {
-        // drag pans over the flat canvas, relative to the current view direction
+        // drag pans over the meadow, relative to the current view direction
         const s = dist * 0.0021;
         const ca = Math.cos(tAzim), sa = Math.sin(tAzim);
         tTx -= (dx * ca + dy * sa * 1.2) * s;
         tTz -= (-dx * sa + dy * ca * 1.2) * s;
-        tTx = Math.max(-34, Math.min(34, tTx)); tTz = Math.max(-30, Math.min(30, tTz));
+        tTx = Math.max(-34, Math.min(34, tTx)); tTz = Math.max(-32, Math.min(32, tTz));
       }
     } else if (pointers.size === 2) {
       p.x = x; p.y = y;
@@ -413,7 +654,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   canvas.addEventListener('mouseup', mu);
   canvas.addEventListener('wheel', onWheel, { passive: false });
 
-  // ---------- picking: each scene owns a box on the flat canvas ----------
+  // ---------- picking: each scene owns a patch of the meadow ----------
   let curProj = m4ident(), curView = m4ident();
   function unproject(inv: M4, nx: number, ny: number, nz: number): V3 {
     const x = inv[0] * nx + inv[4] * ny + inv[8] * nz + inv[12];
@@ -429,7 +670,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     const inv = m4invert(m4mul(curProj, curView));
     const o = unproject(inv, nx, ny, -1), f = unproject(inv, nx, ny, 1);
     const dir = norm3(sub3(f, o));
-    // hit the plane a little above the canvas surface (scene height), then take the nearest tile
+    // hit the plane a little above the meadow surface (scene height), then take the nearest patch
     const planeY = TOP + 1.2;
     if (Math.abs(dir[1]) < 1e-5) return;
     const t = (planeY - o[1]) / dir[1];
@@ -437,9 +678,10 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     const hx = o[0] + dir[0] * t, hz = o[2] + dir[2] * t;
     let best: SceneId | null = null, bd = 1e9;
     for (const id of TOUR) {
+      const b = PICK_BOX[id];
       const dx = Math.abs(hx - SPOTS[id].x), dz = Math.abs(hz - SPOTS[id].z);
-      if (dx < 9.5 && dz < 8) {
-        const d = dx / 9.5 + dz / 8;
+      if (dx < b.rx && dz < b.rz) {
+        const d = dx / b.rx + dz / b.rz;
         if (d < bd) { bd = d; best = id; }
       }
     }
@@ -461,8 +703,6 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     if (userActive && idle) { userActive = false; resumeFrom(now); }
     if (!userActive && !hold) tourStep(now);
     else if (hold && !userActive) phase.t0 += dt * 1000; // panel open: freeze the tour where it is
-    const nid = TOUR[nearestIdx()];
-    if (nid !== focusSent) { focusSent = nid; ev.onFocus(nid); }
 
     const k = Math.min(1, dt * 7);
     const kt = Math.min(1, dt * 5);
@@ -556,17 +796,12 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
 
   // internal test hook for automated checks
   (window as unknown as Record<string, unknown>).__nw = {
-    cam: () => ({ tx, tz, dist, polar, azim, idx, userActive, hold }),
+    cam: () => ({ tx, tz, dist, polar, azim, cur, userActive, hold, phase: phase.kind }),
+    cars: () => carState.map((c) => ({ ...c })),
+    plane: () => ({ ...planeState }),
   };
 
   return {
-    flyTo(id) {
-      const i = TOUR.indexOf(id);
-      touched();
-      lastTouch = performance.now() - 8000; // resume the tour shortly after arriving
-      startTravel(performance.now(), i);
-      userActive = false;
-    },
     setHold(h) { hold = h; if (!h) lastTouch = performance.now() - 4000; },
     dispose() {
       delete (window as unknown as Record<string, unknown>).__nw;

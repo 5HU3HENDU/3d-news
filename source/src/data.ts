@@ -8,14 +8,17 @@ export interface Source { label: string; href: string }
 
 export interface Story {
     id: SceneId;
-    title: string;       // short caption for the tour chip
     headline: string;    // panel title
-    where: string;
     asOf: string;
     bullets: string[];
     note: string;
     sources: Source[];
 }
+
+// When this page was last built, set by hand at build time and shown in the
+// info tab. Separate from each story's own "as of" time: rebuilding the page
+// does not make the news fresher.
+export const BUILD = { at: 'Fri 20 Nov 2026, 1:25 PM IST' };
 
 // Market snapshot: Business Standard live blog, "As of 12:00 PM" update and the
 // "As of 11:00 AM" update. Not live. The page does not refresh these numbers.
@@ -35,9 +38,7 @@ export const CRICKET = {
 export const stories: Story[] = [
     {
         id: 'gta',
-        title: 'GTA VI is out',
         headline: 'Game night: GTA VI is out',
-        where: 'Top left of the canvas: a flat with a glowing TV',
         asOf: 'Announced Thu 19 Nov 2026',
         bullets: [
             'Rockstar Games, a Take-Two label, announced on 19 November 2026 that Grand Theft Auto VI is now available on PlayStation 5 and Xbox Series X|S.',
@@ -51,9 +52,7 @@ export const stories: Story[] = [
     },
     {
         id: 'cyclone',
-        title: 'Cyclone Akvan: Odisha landfall',
         headline: 'Cyclone Akvan crosses the Odisha coast',
-        where: 'Top right of the canvas: the beach at Gopalpur',
         asOf: 'Fri 20 Nov 2026, report updated 11:02 AM IST',
         bullets: [
             'The India Meteorological Department said Akvan crossed the south Odisha and north Andhra Pradesh coast close to Gopalpur between 7:30 and 8:30 AM on 20 November, with winds of 70 to 80 kmph gusting to 90 kmph.',
@@ -70,9 +69,7 @@ export const stories: Story[] = [
     },
     {
         id: 'cricket',
-        title: 'India vs New Zealand, 1st Test',
         headline: 'Cricket: India reply strongly in Wellington',
-        where: 'Bottom right of the canvas: the Basin Reserve',
         asOf: 'Day 2 stumps, Fri 20 Nov 2026 (New Zealand time)',
         bullets: [
             `New Zealand were all out for ${CRICKET.nz} in the first Test at the Basin Reserve, Wellington. Henry Nicholls finished unbeaten on 175 and Glenn Phillips made 118.`,
@@ -93,9 +90,7 @@ export const stories: Story[] = [
     },
     {
         id: 'market',
-        title: 'Sensex and Nifty, 12:00 PM',
         headline: 'Markets: Sensex and Nifty at 12:00 PM',
-        where: 'Bottom left of the canvas: the exchange building',
         asOf: `${MARKET.date}, ${MARKET.asOf}. A snapshot, not live.`,
         bullets: [
             `As of 12:00 PM IST the Sensex was up ${MARKET.sensex.points} points (${MARKET.sensex.pct}) at ${MARKET.sensex.value}.`,

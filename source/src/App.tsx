@@ -1,19 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Callout, Closing, Group, Header, Paragraph, Row, Rows, TextLink } from '@instinct/files';
-import { mountWorld, SceneId, TOUR, WorldHandle } from './world';
-import { Story, stories } from './data';
+import { mountWorld, SceneId, WorldHandle } from './world';
+import { BUILD, Story, stories } from './data';
 
 const byId = (id: SceneId) => stories.find((s) => s.id === id)!;
 
-function Scene({ onPick, onFocus, handle }: { onPick: (id: SceneId) => void; onFocus: (id: SceneId) => void; handle: React.MutableRefObject<WorldHandle | null> }) {
+function Scene({ onPick, handle }: { onPick: (id: SceneId) => void; handle: React.MutableRefObject<WorldHandle | null> }) {
     const ref = useRef<HTMLCanvasElement>(null);
     useEffect(() => {
         if (!ref.current) return;
-        handle.current = mountWorld(ref.current, { onPick, onFocus });
+        handle.current = mountWorld(ref.current, { onPick });
         return () => { handle.current?.dispose(); handle.current = null; };
-    }, [onPick, onFocus, handle]);
+    }, [onPick, handle]);
     return <div className="nw-scene">
-        <canvas ref={ref} className="nw-canvas" aria-label="A flat canvas with four tiny 3D scenes: a flat where two people play GTA VI, the Odisha coast at cyclone landfall, a cricket ground with the India and New Zealand score, and a stock exchange showing Sensex and Nifty" />
+        <canvas ref={ref} className="nw-canvas" aria-label="A floating meadow with four tiny 3D scenes: a flat where two people play GTA VI, the Odisha coast at cyclone landfall, a cricket ground with the India and New Zealand score, and a stock exchange showing Sensex and Nifty. Cars drive a winding road between them and a plane crosses the sky." />
     </div>;
 }
 
@@ -43,9 +43,10 @@ function InfoPanel({ onClose }: { onClose: () => void }) {
                 title="The news, in miniature"
                 fact="Four stories, Fri 20 Nov 2026"
                 factKnown
-                intro="One flat canvas, four tiny 3D scenes. The camera tours them slowly, zooming out and in between stories."
+                intro="One floating meadow, four tiny 3D stories. The camera roams by itself: it pulls back, picks a story at random, drops in and slowly circles it."
             />
-            <p className="nw-tap-tip">The tour runs by itself. Drag to move around, pinch or scroll to zoom, tap a scene to read the story and sources. The dots at the top jump to a story.</p>
+            <p className="nw-tap-tip">Drag to look around, pinch or scroll to zoom, tap a scene to read the story and its sources. Cars, a plane and birds pass through now and then; they are just the world being alive.</p>
+            <p className="nw-build">Last build: {BUILD.at}. Each story keeps its own time below; rebuilding the page does not make the news fresher.</p>
             <Group label="The four stories" heading>
                 <Rows>
                     {stories.map((s, i) => (
@@ -73,12 +74,10 @@ function InfoPanel({ onClose }: { onClose: () => void }) {
 export function App() {
     const [open, setOpen] = useState<SceneId | null>(null);
     const [infoOpen, setInfoOpen] = useState(false);
-    const [focus, setFocus] = useState<SceneId>('gta');
     const handle = useRef<WorldHandle | null>(null);
     const story = open ? byId(open) : null;
 
     const onPick = useCallback((id: SceneId) => setOpen(id), []);
-    const onFocus = useCallback((id: SceneId) => setFocus(id), []);
 
     useEffect(() => { handle.current?.setHold(!!open || infoOpen); }, [open, infoOpen]);
     useEffect(() => {
@@ -92,22 +91,7 @@ export function App() {
     }, [infoOpen, open]);
 
     return <>
-        <Scene onPick={onPick} onFocus={onFocus} handle={handle} />
-        <div className="nw-tour" aria-live="polite">
-            <div className="nw-tour-title">{byId(focus).title}</div>
-            <div className="nw-tour-dots" role="group" aria-label="Jump to a story">
-                {TOUR.map((id) => (
-                    <button
-                        key={id}
-                        type="button"
-                        className={`nw-dot${id === focus ? ' nw-dot-on' : ''}`}
-                        aria-label={byId(id).title}
-                        aria-current={id === focus}
-                        onClick={() => handle.current?.flyTo(id)}
-                    />
-                ))}
-            </div>
-        </div>
+        <Scene onPick={onPick} handle={handle} />
         <button
             type="button"
             className="nw-info-btn"

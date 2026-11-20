@@ -4,13 +4,13 @@ import { GeoBuilder, M4, V3, m4mul, m4rotX, m4rotY, m4scale } from '../geo';
 import { C } from '../palette';
 import type { Ctx } from '../world';
 import { MARKET } from '../data';
-import { T, tile } from './common';
+import { T, patch } from './common';
 import { fitText, roundRect, FONT } from './text';
 
 const GREEN = '#2ee86b', RED = '#ff6060';
 
 export function buildMarket(ctx: Ctx, at: { x: number; z: number }) {
-  const Y = tile(ctx, at.x, at.z, [0.86, 0.9, 0.95], [0.6, 0.68, 0.8]);
+  const Y = patch(ctx, at.x, at.z, [0.86, 0.9, 0.95], [0.6, 0.68, 0.8], 6.5, 7, 14);
   const X = (x: number, y: number, z: number): M4 => T(at.x + x, Y + y, at.z + z);
   const I = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as M4;
   const stone: V3 = [0.93, 0.9, 0.84], stoneDark: V3 = [0.84, 0.8, 0.73];
@@ -36,8 +36,8 @@ export function buildMarket(ctx: Ctx, at: { x: number; z: number }) {
     g.quad(Ab, Af, Pf, Pb, [0.8, 0.45, 0.35]);
     g.quad(Pb, Pf, Bf, Bb, [0.8, 0.45, 0.35]);
     // posts that hold the roof display
-    g.cyl(0.1, 0.1, 1.9, 8, [0.35, 0.37, 0.42], X(-3.2, 4.4, -0.4));
-    g.cyl(0.1, 0.1, 1.9, 8, [0.35, 0.37, 0.42], X(3.2, 4.4, -0.4));
+    g.cyl(0.1, 0.1, 1.05, 8, [0.35, 0.37, 0.42], X(-3.2, 3.55, -0.4));
+    g.cyl(0.1, 0.1, 1.05, 8, [0.35, 0.37, 0.42], X(3.2, 3.55, -0.4));
     ctx.addObj(g, I);
   }
   const frieze = ctx.makeTex(1024, 128, (c, w, h) => {
@@ -143,7 +143,7 @@ export function buildMarket(ctx: Ctx, at: { x: number; z: number }) {
     fitText(c, `SNAPSHOT AT ${MARKET.asOf}  |  ${MARKET.date.toUpperCase()}  |  NOT LIVE`, w / 2, 464, w - 70, 32, 800, '#ffd24a');
   });
   const base = X(0, 6.5, -0.4);
-  ctx.addDecal({ tex: screen, model: base, w: 7.6, h: 3.8, glow: 0.5 });
+  ctx.addDecal({ tex: screen, model: base, w: 7.6, h: 3.8, billboard: true, glow: 0.5 });
   // gentle redraw so the little chart dot travels (about 8 times a second)
   let last = 0;
   ctx.onFrame((t) => { if (t - last > 0.12) { last = t; screen.redraw(); } });

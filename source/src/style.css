@@ -259,34 +259,17 @@ body {
     .nw-close { width: 40px; height: 40px; font-size: 22px; }
 }
 
-/* Tour chip: current story title and jump dots */
-.nw-tour {
-    position: fixed;
-    z-index: 25;
-    top: max(14px, env(safe-area-inset-top, 0px));
-    left: max(14px, env(safe-area-inset-left, 0px));
-    max-width: calc(100vw - 90px);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 10px 14px;
+/* Build stamp in the info panel */
+.nw-build {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--ds-ink-2);
+    margin: 8px 0 0;
+    padding: 8px 12px;
     border: 1px solid var(--ds-hairline);
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 2px 10px rgba(37, 31, 33, 0.12);
-    pointer-events: none;
+    border-radius: 10px;
+    background: var(--ds-raised);
 }
-.nw-tour-title { font-size: 15px; font-weight: 700; line-height: 20px; color: var(--ds-ink); }
-.nw-tour-dots { display: flex; gap: 8px; pointer-events: auto; }
-.nw-dot {
-    width: 14px; height: 14px; padding: 0; border-radius: 50%;
-    border: 2px solid var(--ds-ink-2); background: transparent; cursor: pointer;
-    position: relative;
-}
-.nw-dot::after { content: ''; position: absolute; top: -10px; right: -4px; bottom: -10px; left: -4px; }
-.nw-dot-on { background: var(--ds-ink); border-color: var(--ds-ink); }
 @media (min-width: 1400px) {
-    .nw-tour { top: 24px; left: 24px; padding: 14px 20px; gap: 12px; }
-    .nw-tour-title { font-size: 22px; line-height: 28px; }
-    .nw-dot { width: 20px; height: 20px; }
+    .nw-build { font-size: 13px; line-height: 20px; }
 }
