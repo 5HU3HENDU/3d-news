@@ -1,5 +1,5 @@
 // Scene 4: a little stock exchange. Sensex and Nifty on the roof display, green when up, red when down.
-// The numbers are a fixed, timestamped snapshot from data.ts. The chart joins the two readings the source gave.
+// The numbers are the fixed closing levels from data.ts. The chart joins Thursday's close to Friday's close.
 import { GeoBuilder, M4, V3, m4mul, m4rotX, m4rotY, m4scale } from '../geo';
 import { C } from '../palette';
 import type { Ctx } from '../world';
@@ -123,7 +123,7 @@ export function buildMarket(ctx: Ctx, at: { x: number; z: number }) {
       triangle(c, 52, y0 + 168, 16, r.d.up, color);
       c.font = `800 38px ${FONT}`; c.fillStyle = color;
       c.fillText(`${r.d.points}  (${r.d.pct})`, 84, y0 + 168);
-      // two-point trend chart: 11:00 AM reading to 12:00 PM reading
+      // two-point trend chart: Thursday's close to Friday's close
       const cx0 = 700, cx1 = 960, cy0 = y0 + 40, cy1 = y0 + 140;
       roundRect(c, cx0 - 24, y0 + 6, cx1 - cx0 + 48, 172, 18);
       c.fillStyle = 'rgba(255,255,255,.06)'; c.fill();
@@ -137,10 +137,10 @@ export function buildMarket(ctx: Ctx, at: { x: number; z: number }) {
       c.fillStyle = '#fff'; c.beginPath(); c.arc(px, py, 10, 0, Math.PI * 2); c.fill();
       c.fillStyle = color; c.beginPath(); c.arc(cx0, ya, 8, 0, Math.PI * 2); c.arc(cx1, yb, 8, 0, Math.PI * 2); c.fill();
       c.font = `700 24px ${FONT}`; c.fillStyle = '#9fb0cf';
-      c.textAlign = 'left'; c.fillText('11 AM', cx0 - 14, y0 + 164);
-      c.textAlign = 'right'; c.fillText('12 PM', cx1 + 14, y0 + 164);
+      c.textAlign = 'left'; c.fillText('THU', cx0 - 14, y0 + 164);
+      c.textAlign = 'right'; c.fillText('FRI CLOSE', cx1 + 14, y0 + 164);
     });
-    fitText(c, `SNAPSHOT AT ${MARKET.asOf}  |  ${MARKET.date.toUpperCase()}  |  NOT LIVE`, w / 2, 464, w - 70, 32, 800, '#ffd24a');
+    fitText(c, `CLOSING LEVELS  |  ${MARKET.date.toUpperCase()}  |  NOT LIVE`, w / 2, 464, w - 70, 32, 800, '#ffd24a');
   });
   const base = X(0, 6.5, -0.4);
   ctx.addDecal({ tex: screen, model: base, w: 7.6, h: 3.8, billboard: true, glow: 0.5 });

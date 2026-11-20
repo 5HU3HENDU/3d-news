@@ -11,6 +11,10 @@ import { buildGta } from './scenes/gta';
 import { buildCyclone } from './scenes/cyclone';
 import { buildCricket } from './scenes/cricket';
 import { buildMarket } from './scenes/market';
+import { buildEpfo } from './scenes/epfo';
+import { buildCheetah } from './scenes/cheetah';
+import { buildInsurance } from './scenes/insurance';
+import { buildService } from './scenes/service';
 
 export type { SceneId };
 export interface WorldHandle {
@@ -59,20 +63,31 @@ export interface Ctx {
 }
 
 // Scene centres on the meadow (x, z), loosely scattered rather than gridded.
+// The first four sit in the middle; the newer four sit around the outside, past the outer road.
 export const SPOTS: Record<SceneId, { x: number; z: number }> = {
   gta: { x: -19, z: -10 },
   cyclone: { x: 10, z: -13 },
   cricket: { x: 14, z: 11 },
   market: { x: -15, z: 11 },
+  epfo: { x: -40, z: 14 },
+  cheetah: { x: 6, z: -42 },
+  insurance: { x: 45, z: -3 },
+  service: { x: -5, z: 44 },
 };
-export const TOUR: SceneId[] = ['gta', 'cyclone', 'cricket', 'market'];
+export const TOUR: SceneId[] = ['gta', 'cyclone', 'cricket', 'market', 'epfo', 'cheetah', 'insurance', 'service'];
 // Tap target half-extents per scene (x, z).
 const PICK_BOX: Record<SceneId, { rx: number; rz: number }> = {
   gta: { rx: 7, rz: 6.5 },
   cyclone: { rx: 11.5, rz: 8.5 },
   cricket: { rx: 9.5, rz: 9.5 },
   market: { rx: 7, rz: 7.5 },
+  epfo: { rx: 6.5, rz: 6.5 },
+  cheetah: { rx: 6.5, rz: 6.5 },
+  insurance: { rx: 6.5, rz: 6.5 },
+  service: { rx: 6.5, rz: 6.5 },
 };
+// The meadow is scaled up from the original four-scene island to make room for eight scenes.
+const ISL = 1.7;
 const TOP = 1.2;
 
 // ---------- shaders ----------
@@ -258,60 +273,87 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   // One organic island: a grass blob on top, tapering soil layers and a rocky tip below.
   {
     const grass = new GeoBuilder();
-    grass.prism(blobOutline(36, 34, 5, 18, 0.08), 1.3, C.grass, T(0, TOP - 1.3, 0));
+    grass.prism(blobOutline(36 * ISL, 34 * ISL, 5, 18, 0.08), 1.3, C.grass, T(0, TOP - 1.3, 0));
     ctx.addObj(grass, I);
     const soil1 = new GeoBuilder();
-    soil1.prism(blobOutline(36 * 0.82, 34 * 0.82, 6, 18, 0.12), 1.3, C.soil, T(0, TOP - 2.6, 0));
+    soil1.prism(blobOutline(36 * ISL * 0.82, 34 * ISL * 0.82, 6, 18, 0.12), 1.3, C.soil, T(0, TOP - 2.6, 0));
     ctx.addObj(soil1, I);
     const soil2 = new GeoBuilder();
-    soil2.prism(blobOutline(36 * 0.6, 34 * 0.6, 7, 16, 0.14), 1.3, [0.47, 0.32, 0.22], T(0, TOP - 3.9, 0));
+    soil2.prism(blobOutline(36 * ISL * 0.6, 34 * ISL * 0.6, 7, 16, 0.14), 1.3, [0.47, 0.32, 0.22], T(0, TOP - 3.9, 0));
     ctx.addObj(soil2, I);
     const soil3 = new GeoBuilder();
-    soil3.prism(blobOutline(36 * 0.38, 34 * 0.38, 8, 14, 0.16), 1.5, [0.4, 0.27, 0.19], T(0, TOP - 5.4, 0));
+    soil3.prism(blobOutline(36 * ISL * 0.38, 34 * ISL * 0.38, 8, 14, 0.16), 1.5, [0.4, 0.27, 0.19], T(0, TOP - 5.4, 0));
     ctx.addObj(soil3, I);
     const tip = new GeoBuilder();
-    tip.cyl(0.2, 8.5, 2.6, 12, [0.36, 0.25, 0.18], T(0, TOP - 8.0, 0));
+    tip.cyl(0.2, 8.5 * ISL, 2.6, 12, [0.36, 0.25, 0.18], T(0, TOP - 8.0, 0));
     ctx.addObj(tip, I);
   }
 
-  // ---------- the winding road that ties the stories together ----------
-  // Winding loop threaded through the gaps between scenes (clearance-checked).
+  // ---------- the winding roads that tie the stories together ----------
+  // An inner loop threaded through the first four scenes and an outer loop that runs between them and the
+  // newer four, with a short spur to each of those (clearance-checked against every scene).
   const ROAD_CTRL: V3[] = [
     [-14, 0, -0.7], [-5.8, 0, -10.6], [-7, 0, -23.2], [13.6, 0, -24.9], [24, 0, -16],
     [27.1, 0, 3.6], [25.8, 0, 6.8], [26.5, 0, 13], [21.2, 0, 21], [9, 0, 27.4], [-1.2, 0, 13.2], [-9.1, 0, 2.9],
   ];
+  const OUTER_CTRL: V3[] = ([
+    [34, -0], [33.8, 9.1], [31.2, 18], [25.5, 25.5], [18, 31.2], [9.1, 33.8], [0, 33], [-8.5, 31.9], [-16.5, 28.6],
+    [-23.3, 23.3], [-27.7, 16], [-29.9, 8], [-32, 0], [-31.9, -8.5], [-29.4, -17], [-23.3, -23.3], [-16, -27.7],
+    [-8.3, -30.9], [0, -32], [8.3, -30.9], [17, -29.4], [24.7, -24.7], [30.3, -17.5], [32.8, -8.8],
+  ] as [number, number][]).map(([x, z]) => [x, 0, z] as V3);
   const roadPath = sampleLoop(ROAD_CTRL, 24);
-  {
-    const g = new GeoBuilder();
-    const W = 0.85, y = TOP + 0.05;
-    for (let i = 0; i < roadPath.length; i++) {
-      const a = roadPath[i], b = roadPath[(i + 1) % roadPath.length];
-      const dx = b[0] - a[0], dz = b[2] - a[2];
-      const l = Math.hypot(dx, dz) || 1;
-      const nx = -dz / l, nz = dx / l;
-      g.quad(
-        [a[0] - nx * W, y, a[2] - nz * W], [a[0] + nx * W, y, a[2] + nz * W],
-        [b[0] + nx * W, y, b[2] + nz * W], [b[0] - nx * W, y, b[2] - nz * W],
-        [0.42, 0.42, 0.46],
-      );
-    }
-    // joint caps: discs fill the wedge gaps where quad segments meet on curves
-    // (same colour and height as the quads, so the coplanar overlap is invisible)
-    for (const p of roadPath) g.disc(W, 10, [0.42, 0.42, 0.46], T(p[0], y, p[2]));
-    ctx.addObj(g, I);
-  }
-  const roadAt = (u: number): { x: number; z: number; heading: number } => {
-    const n = roadPath.length;
+  const outerPath = sampleLoop(OUTER_CTRL, 14);
+  const ROAD_COL: V3 = [0.42, 0.42, 0.46];
+  const roadAtOn = (path: V3[], u: number): { x: number; z: number; heading: number } => {
+    const n = path.length;
     const f = ((u % 1) + 1) % 1 * n;
     const i = Math.floor(f) % n, k = f - Math.floor(f);
-    const a = roadPath[i], b = roadPath[(i + 1) % n];
+    const a = path[i], b = path[(i + 1) % n];
     const x = a[0] + (b[0] - a[0]) * k, z = a[2] + (b[2] - a[2]) * k;
     return { x, z, heading: Math.atan2(b[0] - a[0], b[2] - a[2]) };
   };
-  // a few cars, sparse and unhurried
-  const carCols: V3[] = [[0.85, 0.25, 0.2], [0.25, 0.45, 0.85], [0.95, 0.75, 0.2]];
+  {
+    const g = new GeoBuilder();
+    const W = 0.85, y = TOP + 0.05;
+    const strip = (pts: V3[], closed: boolean) => {
+      const n = closed ? pts.length : pts.length - 1;
+      for (let i = 0; i < n; i++) {
+        const a = pts[i], b = pts[(i + 1) % pts.length];
+        const dx = b[0] - a[0], dz = b[2] - a[2];
+        const l = Math.hypot(dx, dz) || 1;
+        const nx = -dz / l, nz = dx / l;
+        g.quad(
+          [a[0] - nx * W, y, a[2] - nz * W], [a[0] + nx * W, y, a[2] + nz * W],
+          [b[0] + nx * W, y, b[2] + nz * W], [b[0] - nx * W, y, b[2] - nz * W],
+          ROAD_COL,
+        );
+      }
+      // joint caps: discs fill the wedge gaps where quad segments meet on curves
+      // (same colour and height as the quads, so the coplanar overlap is invisible)
+      for (const p of pts) g.disc(W, 10, ROAD_COL, T(p[0], y, p[2]));
+    };
+    strip(roadPath, true);
+    strip(outerPath, true);
+    // a spur from the outer loop to each of the newer four scenes
+    for (const id of TOUR.slice(4)) {
+      const c = SPOTS[id];
+      let best = outerPath[0], bd = 1e9;
+      for (const p of outerPath) {
+        const d = Math.hypot(p[0] - c.x, p[2] - c.z);
+        if (d < bd) { bd = d; best = p; }
+      }
+      const dx = best[0] - c.x, dz = best[2] - c.z, l = Math.hypot(dx, dz) || 1;
+      const end: V3 = [c.x + (dx / l) * 5.2, 0, c.z + (dz / l) * 5.2];
+      const pts: V3[] = [];
+      for (let k = 0; k <= 8; k++) pts.push([best[0] + (end[0] - best[0]) * k / 8, 0, best[2] + (end[2] - best[2]) * k / 8]);
+      strip(pts, false);
+    }
+    ctx.addObj(g, I);
+  }
+  // a few cars on each loop, sparse and unhurried
+  const carCols: V3[] = [[0.85, 0.25, 0.2], [0.25, 0.45, 0.85], [0.95, 0.75, 0.2], [0.3, 0.7, 0.45], [0.7, 0.4, 0.8], [0.95, 0.55, 0.25]];
   const carState: { x: number; z: number }[] = [];
-  for (let k = 0; k < 3; k++) {
+  for (let k = 0; k < 6; k++) {
     const g = new GeoBuilder();
     const col = carCols[k];
     g.box(0.55, 0.22, 1.15, col, T(0, 0.2, 0));               // body
@@ -320,11 +362,13 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     for (const [wx, wz] of [[-0.28, 0.36], [0.28, 0.36], [-0.28, -0.36], [0.28, -0.36]] as [number, number][]) {
       g.cyl(0.11, 0.11, 0.08, 10, [0.15, 0.15, 0.17], m4mul(T(wx, 0.11, wz), m4rotZ(Math.PI / 2)));
     }
-    const speed = 0.016 + k * 0.004, off = k / 3;
+    const inner = k < 3;
+    const path = inner ? roadPath : outerPath;
+    const speed = inner ? 0.016 + k * 0.004 : 0.011 + (k - 3) * 0.0025, off = (inner ? k : k - 3) / 3 + (inner ? 0 : 0.17);
     carState.push({ x: 0, z: 0 });
     ctx.addObj(g, I, {
       update: (t) => {
-        const p = roadAt(t * speed + off);
+        const p = roadAtOn(path, t * speed + off);
         carState[k].x = p.x; carState[k].z = p.z;
         return m4mul(T(p.x, TOP + 0.05 + Math.abs(Math.sin(t * 7 + k)) * 0.015, p.z), m4rotY(p.heading));
       },
@@ -332,9 +376,9 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   }
 
   // ---------- a small plane crossing the sky now and then ----------
-  const planeFrom: V3 = [-52, TOP + 13.5, -36];
-  const planeTo: V3 = [52, TOP + 15, 30];
-  const PLANE_PERIOD = 30, PLANE_FLY = 15;
+  const planeFrom: V3 = [-82, TOP + 13.5, -58];
+  const planeTo: V3 = [82, TOP + 15, 50];
+  const PLANE_PERIOD = 36, PLANE_FLY = 20;
   const planeHeading = Math.atan2(planeTo[0] - planeFrom[0], planeTo[2] - planeFrom[2]);
   const planeState = { visible: false };
   function planeM(t: number): M4 {
@@ -363,7 +407,8 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
 
   // ---------- clouds, birds and meadow dressing ----------
   const cloudSpots: [number, number, number, number][] = [
-    [-28, 10, -24, 1.5], [0, 11, -6, 1.4], [4, 12, -26, 1.8], [-4, 11, 27, 1.5], [30, 10, -4, 1.2], [-31, 10.5, 3, 1.3], [26, 11.5, 20, 1.4],
+    [-28, 10, -24, 1.5], [0, 11, -6, 1.4], [-14, 12, -29, 1.8], [-14, 11, 25, 1.5], [30, 10, -4, 1.2], [-31, 10.5, 3, 1.3], [26, 11.5, 20, 1.4],
+    [-48, 11, -20, 1.6], [-30, 12, 36, 1.5], [22, 11, 44, 1.6], [48, 10.5, 22, 1.4], [40, 12, -38, 1.7], [-26, 11.5, -54, 1.5], [-52, 10.5, 40, 1.3], [58, 11, -20, 1.2], [14, 12, 58, 1.4],
   ];
   for (const [x, y, z, s] of cloudSpots) {
     const g = new GeoBuilder();
@@ -378,7 +423,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     g.sphere(0.09, 8, 6, [0.2, 0.2, 0.24]);
     g.box(0.5, 0.03, 0.14, [0.2, 0.2, 0.24], m4mul(T(-0.3, 0.04, 0), m4rotZ(0.35)));
     g.box(0.5, 0.03, 0.14, [0.2, 0.2, 0.24], m4mul(T(0.3, 0.04, 0), m4rotZ(-0.35)));
-    const cx = -6 + b * 9, cz = b % 2 ? 6 : -8, r = 9 + b * 2.5, sp = 0.05 + b * 0.012, ph = b * 2.1;
+    const cx = -6 + b * 9, cz = b % 2 ? 6 : -8, r = 14 + b * 6, sp = 0.04 + b * 0.01, ph = b * 2.1;
     ctx.addObj(g, I, {
       update: (t) => {
         const a = t * sp + ph;
@@ -394,16 +439,18 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
         const b = PICK_BOX[id];
         if (Math.hypot(x - SPOTS[id].x, z - SPOTS[id].z) < Math.max(b.rx, b.rz) + 1.6) return false;
       }
-      for (let i = 0; i < roadPath.length; i += 2) {
-        if (Math.hypot(x - roadPath[i][0], z - roadPath[i][2]) < 2.3) return false;
+      for (const path of [roadPath, outerPath]) {
+        for (let i = 0; i < path.length; i += 2) {
+          if (Math.hypot(x - path[i][0], z - path[i][2]) < 2.3) return false;
+        }
       }
-      return Math.hypot(x, z) < 29;
+      return Math.hypot(x, z) < 48;
     };
     const rnd = seeded(23);
     const bush = new GeoBuilder();
     let placed = 0, guard = 0;
-    while (placed < 9 && guard++ < 80) {
-      const x = (rnd() * 2 - 1) * 29, z = (rnd() * 2 - 1) * 29;
+    while (placed < 22 && guard++ < 260) {
+      const x = (rnd() * 2 - 1) * 48, z = (rnd() * 2 - 1) * 48;
       if (!clearOf(x, z)) continue;
       const s = 0.5 + rnd() * 0.5;
       bush.sphere(0.5, 9, 6, C.grassDark, m4mul(T(x, TOP + 0.25 * s, z), m4scale(s * 1.3, s, s * 1.3)));
@@ -414,8 +461,8 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     const flowers = new GeoBuilder();
     placed = 0; guard = 0;
     const petal: V3[] = [[0.95, 0.5, 0.6], [0.95, 0.85, 0.3], [0.97, 0.97, 0.95], [0.7, 0.5, 0.9]];
-    while (placed < 14 && guard++ < 120) {
-      const x = (rnd() * 2 - 1) * 29, z = (rnd() * 2 - 1) * 29;
+    while (placed < 32 && guard++ < 400) {
+      const x = (rnd() * 2 - 1) * 48, z = (rnd() * 2 - 1) * 48;
       if (!clearOf(x, z)) continue;
       flowers.cyl(0.02, 0.02, 0.22, 5, C.plant, T(x, TOP, z));
       flowers.sphere(0.09, 7, 5, petal[placed % petal.length], T(x, TOP + 0.26, z));
@@ -424,8 +471,8 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     ctx.addObj(flowers, I, { anim: 'sway', phase: 2, amp: 0.05 });
     const rocks = new GeoBuilder();
     placed = 0; guard = 0;
-    while (placed < 5 && guard++ < 60) {
-      const x = (rnd() * 2 - 1) * 28, z = (rnd() * 2 - 1) * 28;
+    while (placed < 12 && guard++ < 200) {
+      const x = (rnd() * 2 - 1) * 47, z = (rnd() * 2 - 1) * 47;
       if (!clearOf(x, z)) continue;
       const s = 0.3 + rnd() * 0.35;
       rocks.sphere(0.4, 8, 5, [0.6, 0.6, 0.62], m4mul(T(x, TOP + 0.1 * s, z), m4scale(s * 1.3, s * 0.8, s)));
@@ -441,7 +488,18 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       ctx.addObj(g, I, { wave: 0.012 });
     }
     // two round trees
-    for (const [x, z, s] of [[3.5, 16.5, 1.0], [-5, -18.5, 1.2]] as [number, number, number][]) {
+    // more round trees, scattered with the same clearances as the bushes
+    const treeSpots: [number, number, number][] = [[3.5, 16.5, 1.0], [-5, -18.5, 1.2]];
+    {
+      let n = 0, gd = 0;
+      while (n < 12 && gd++ < 400) {
+        const x = (rnd() * 2 - 1) * 48, z = (rnd() * 2 - 1) * 48;
+        if (!clearOf(x, z)) continue;
+        treeSpots.push([x, z, 0.8 + rnd() * 0.5]);
+        n++;
+      }
+    }
+    for (const [x, z, s] of treeSpots) {
       const g = new GeoBuilder();
       g.cyl(0.14, 0.18, 1.1, 8, C.trunk, T(x, TOP, z));
       g.sphere(0.9, 10, 7, C.palm, T(x, TOP + 1.5 * s, z));
@@ -454,6 +512,10 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   buildCyclone(ctx, SPOTS.cyclone);
   buildCricket(ctx, SPOTS.cricket);
   buildMarket(ctx, SPOTS.market);
+  buildEpfo(ctx, SPOTS.epfo);
+  buildCheetah(ctx, SPOTS.cheetah);
+  buildInsurance(ctx, SPOTS.insurance);
+  buildService(ctx, SPOTS.service);
 
   // ---------- per-frame model matrix ----------
   function modelFor(o: Obj, t: number): M4 {
@@ -491,7 +553,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   // ---------- camera: a roaming visitor ----------
   // Each visit: arrive facing the scene's front (headline beat), then slowly
   // circle it to show the sides, pull back, and wander to a random other story.
-  const FAR = 58;
+  const FAR = 90;
   const HOLD = 0.24; // first slice of a dwell: hold the readable framing
   const close = (id: SceneId) => ({ x: SPOTS[id].x, z: SPOTS[id].z + 0.4 });
   const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -560,7 +622,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     const c = close(next);
     const d = dwellParams(0);
     phase = {
-      kind: 'travel', t0: now, dur: 7000,
+      kind: 'travel', t0: now, dur: 9000,
       from: { x: tTx, z: tTz, az: tAzim, po: tPolar, d: tDist },
       to: { x: c.x, z: c.z, az: d.az0, po: d.po0, d: d.d0 },
     };
@@ -642,13 +704,13 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
         const ca = Math.cos(tAzim), sa = Math.sin(tAzim);
         tTx -= (dx * ca + dy * sa * 1.2) * s;
         tTz -= (-dx * sa + dy * ca * 1.2) * s;
-        tTx = Math.max(-34, Math.min(34, tTx)); tTz = Math.max(-32, Math.min(32, tTz));
+        tTx = Math.max(-58, Math.min(58, tTx)); tTz = Math.max(-54, Math.min(54, tTz));
       }
     } else if (pointers.size === 2) {
       p.x = x; p.y = y;
       const [a, b] = [...pointers.values()];
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinchD > 0) tDist = Math.min(70, Math.max(7, tDist * (pinchD / d)));
+      if (pinchD > 0) tDist = Math.min(110, Math.max(7, tDist * (pinchD / d)));
       pinchD = d;
       moved = true; touched();
     }
@@ -663,7 +725,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   function onWheel(e: WheelEvent) {
     e.preventDefault();
     touched();
-    tDist = Math.min(70, Math.max(7, tDist * Math.exp(e.deltaY * 0.0012)));
+    tDist = Math.min(110, Math.max(7, tDist * Math.exp(e.deltaY * 0.0012)));
   }
   const pd = (e: PointerEvent) => { try { canvas.setPointerCapture(e.pointerId); } catch { /* noop */ } down(e.clientX, e.clientY, e.pointerId, true); };
   const pm = (e: PointerEvent) => move(e.clientX, e.clientY, e.pointerId, true);

@@ -1,9 +1,9 @@
 import { BUILD_AT } from './buildStamp';
 // Story facts and the market snapshot. Everything shown in the world and in the
 // info panels comes from here, so a fact is changed in exactly one place.
-// Every figure below was read from the linked source on 20 Nov 2026.
+// Every figure below was read from the linked sources on 20 Nov 2026 (refreshed in the evening).
 
-export type SceneId = 'gta' | 'cyclone' | 'cricket' | 'market';
+export type SceneId = 'gta' | 'cyclone' | 'cricket' | 'market' | 'epfo' | 'cheetah' | 'insurance' | 'service';
 
 export interface Source { label: string; href: string }
 
@@ -21,13 +21,13 @@ export interface Story {
 // does not make the news fresher.
 export const BUILD = { at: BUILD_AT };
 
-// Market snapshot: Business Standard live blog, "As of 12:00 PM" update and the
-// "As of 11:00 AM" update. Not live. The page does not refresh these numbers.
+// Market close, Fri 20 Nov 2026 (3:30 PM IST). Closing levels and day changes as reported by
+// Hindustan Times and ET Now. Thursday's close is the Friday close minus the day's change.
 export const MARKET = {
-    asOf: '12:00 PM IST',
+    asOf: 'close',
     date: 'Fri 20 Nov 2026',
-    sensex: { value: '83,378.42', pct: '+0.43%', points: '+356.67', up: true, earlier: { at: '11:00 AM', value: 83190.82 }, now: 83378.42 },
-    nifty: { value: '25,614.55', pct: '+0.39%', points: '+100.25', up: true, earlier: { at: '11:00 AM', value: 25569.80 }, now: 25614.55 },
+    sensex: { value: '83,919.71', pct: '+1.08%', points: '+897.96', up: true, earlier: { at: 'Thu', value: 83021.75 }, now: 83919.71 },
+    nifty: { value: '25,800.60', pct: '+1.12%', points: '+286.30', up: true, earlier: { at: 'Thu', value: 25514.30 }, now: 25800.60 },
 };
 
 export const CRICKET = {
@@ -44,8 +44,9 @@ export const stories: Story[] = [
         bullets: [
             'Rockstar Games, a Take-Two label, announced on 19 November 2026 that Grand Theft Auto VI is now available on PlayStation 5 and Xbox Series X|S.',
             'Only those two consoles are named in the announcement.',
+            'The release calls the game the highest rated of all time and quotes early reviews. That is the company\u2019s own claim.',
         ],
-        note: 'The two players and their glowing TV are an illustration, not gameplay footage.',
+        note: 'The two players and their glowing TV are an illustration, not gameplay footage. Nothing newer than the 19 November announcement was found on 20 November.',
         sources: [{
             label: 'Take-Two Interactive press release, 19 Nov 2026',
             href: 'https://www.take2games.com/ir/news/rockstar-games-announces-grand-theft-auto-vi-now-available',
@@ -53,56 +54,132 @@ export const stories: Story[] = [
     },
     {
         id: 'cyclone',
-        headline: 'Cyclone Akvan crosses the Odisha coast',
-        asOf: 'Fri 20 Nov 2026, report updated 11:02 AM IST',
+        headline: 'Cyclone Akvan crossed the Odisha coast and is weakening',
+        asOf: 'Fri 20 Nov 2026, India Today report of 4:37 PM IST',
         bullets: [
             'The India Meteorological Department said Akvan crossed the south Odisha and north Andhra Pradesh coast close to Gopalpur between 7:30 and 8:30 AM on 20 November, with winds of 70 to 80 kmph gusting to 90 kmph.',
-            'The Odisha Chief Secretary said no untoward incident was reported. Heavy rain fell in south coastal and coastal districts, and Patrapur in Ganjam recorded the most, 209 mm.',
-            'About 3.72 lakh people were moved to roughly 10,000 shelters beforehand.',
-            'Water: the Chief Secretary said low-lying urban areas were filled with rainwater. The scene shows only small puddles on low ground, and no flooded homes or streets, because none were reported.',
-            'IMD sources said the system would weaken into a deep depression and then a depression during the day.',
+            'By 11:30 AM it had weakened into a deep depression. IMD expects it to become a depression, then a well-marked low-pressure area by late night on 20 November.',
+            'Heavy rain fell in coastal Odisha. Patrapur in Ganjam recorded the most, 209 mm in 24 hours. Rain may continue in parts of Odisha and neighbouring West Bengal.',
+            'State officials reported no major damage or loss of life in the initial assessment. More than 3.7 lakh people were moved to safer places beforehand.',
+            'Earlier, the Odisha Chief Secretary said low-lying urban areas were filled with rainwater. The scene shows only small puddles on low ground, and no flooded homes or streets, because none were reported.',
         ],
         note: 'The swirl is a toy model of the storm at the coast. The wind makes the ODISHA letters jump, and the line of people walking to the shelter is the evacuation. No destruction is depicted.',
-        sources: [{
-            label: 'The Hindu: Cyclone Akvan crosses Odisha coast, 20 Nov 2026',
-            href: 'https://www.thehindu.com/news/national/cyclone-akvan-odisha-andhra-pradesh-landfall-imd-updates/article71722866.ece',
-        }],
+        sources: [
+            {
+                label: 'India Today: Cyclone Akvan to weaken by tonight, 20 Nov 2026',
+                href: 'https://www.indiatoday.in/science/story/cyclone-akvan-weakens-after-odisha-landfall-imd-rain-storm-disaster-3043155-2026-11-20',
+            },
+            {
+                label: 'The Hindu: Cyclone Akvan crosses Odisha coast, 20 Nov 2026',
+                href: 'https://www.thehindu.com/news/national/cyclone-akvan-odisha-andhra-pradesh-landfall-imd-updates/article71722866.ece',
+            },
+        ],
     },
     {
         id: 'cricket',
         headline: 'Cricket: India reply strongly in Wellington',
         asOf: 'Day 2 stumps, Fri 20 Nov 2026 (New Zealand time)',
         bullets: [
-            `New Zealand were all out for ${CRICKET.nz} in the first Test at the Basin Reserve, Wellington. Henry Nicholls finished unbeaten on 175 and Glenn Phillips made 118.`,
-            `India ended day 2 on ${CRICKET.ind}, trailing by ${CRICKET.trail} runs. Yashasvi Jaiswal made 85 from 89 balls, KL Rahul was 52 not out, and Devdutt Padikkal 16 not out.`,
-            'Jasprit Bumrah took four wickets for India.',
+            `New Zealand were all out for ${CRICKET.nz} in the first Test at the Basin Reserve, Wellington. Henry Nicholls finished unbeaten on 175 and Glenn Phillips made 118, in a stand of 216.`,
+            `India ended day 2 on ${CRICKET.ind}, trailing by ${CRICKET.trail} runs. Openers Yashasvi Jaiswal and KL Rahul added 130 for the first wicket. Jaiswal made 85 from 89 balls and Rahul was 52 not out.`,
+            'Jasprit Bumrah took four wickets and Akash Deep three for India.',
         ],
-        note: 'This is the day 2 stumps score. Play continues on day 3, so the scoreboard in the scene is fixed and does not update.',
+        note: 'This is the day 2 stumps score. Day 3 had not started when this page was last checked, so the scoreboard in the scene is fixed and does not update.',
         sources: [
             {
                 label: 'AP: India ends Day 2 at 159-1 in reply to New Zealand\u2019s 368',
                 href: 'https://apnews.com/article/cricket-new-zealand-india-1st-test-f81df4378452cf7b12066bc243369bdb',
             },
             {
-                label: 'Sportstar: Day 2 report, 20 Nov 2026',
-                href: 'https://sportstar.thehindu.com/cricket/india-vs-new-zealand-first-test-day-2-report-scores-runs-wickets-summary/article71723363.ece',
+                label: 'ESPNcricinfo: Day 2 match report',
+                href: 'https://www.cricinfo.com/series/india-in-new-zealand-2026-27-1539421/new-zealand-vs-india-1st-test-1539442/match-report-2',
             },
         ],
     },
     {
         id: 'market',
-        headline: 'Markets: Sensex and Nifty at 12:00 PM',
-        asOf: `${MARKET.date}, ${MARKET.asOf}. A snapshot, not live.`,
+        headline: 'Markets: Sensex and Nifty end higher',
+        asOf: `${MARKET.date}, closing levels. Not live.`,
         bullets: [
-            `As of 12:00 PM IST the Sensex was up ${MARKET.sensex.points} points (${MARKET.sensex.pct}) at ${MARKET.sensex.value}.`,
-            `The Nifty 50 was up ${MARKET.nifty.points} points (${MARKET.nifty.pct}) at ${MARKET.nifty.value}.`,
-            'The little chart joins the two readings the source gave: 11:00 AM and 12:00 PM. It is not a full intraday chart.',
-            'This is a midday reading while trading was still open. It is not the closing level.',
+            `The Sensex closed up ${MARKET.sensex.points} points (${MARKET.sensex.pct}) at ${MARKET.sensex.value}.`,
+            `The Nifty 50 closed up ${MARKET.nifty.points} points (${MARKET.nifty.pct}) at ${MARKET.nifty.value}.`,
+            'Banking stocks led: the Nifty Bank index rose about 2.5 per cent. Breadth was weak, with 1,582 stocks advancing and 2,456 declining on the exchange.',
+            'The little chart joins Thursday\u2019s close, worked out from the day\u2019s change, to Friday\u2019s close. It is not an intraday chart.',
         ],
-        note: 'Green means up, red would mean down. The numbers stay fixed at the time shown until the page is updated by hand. Automatic refresh has not been set up.',
+        note: 'Green means up, red would mean down. These are the final closing numbers for 20 November. The page does not refresh them, and Monday\u2019s trading will change the picture.',
+        sources: [
+            {
+                label: 'Hindustan Times: Sensex jumps over 890 points, Nifty at 25,800.60',
+                href: 'https://www.hindustantimes.com/business/sensex-jumps-over-890-points-nifty-up-by-280-points-to-to-2580060-101795168161123.html',
+            },
+            {
+                label: 'ET Now: Closing Bell, Nifty and Sensex end higher',
+                href: 'https://www.etnownews.com/markets/closing-bell-nifty-sensex-end-higher-despite-weak-market-breadth-banking-stocks-steal-the-show-article-156541891',
+            },
+        ],
+    },
+    {
+        id: 'epfo',
+        headline: 'EPFO board eases PF withdrawals',
+        asOf: 'Board meeting Thu 19 Nov 2026, PIB release 6:28 PM',
+        bullets: [
+            'The EPFO Central Board of Trustees approved a lower minimum balance for PF members: down from 25% to 10% of contributions.',
+            'It also cut the waiting period for a final PF withdrawal from 12 months to 2 months.',
+            'It approved a voluntary Systematic Withdrawal Plan, so retiring members can take their PF savings in regular instalments instead of one lump sum. Amendments to the EPF scheme are to be notified after the Labour Ministry approves.',
+            'The release does not say when the new minimum balance and waiting period take effect.',
+        ],
+        note: 'The piggy bank, coin tap and little office are an illustration. The two boards show the numbers from the release, and the pot with a tap stands for the Systematic Withdrawal Plan.',
         sources: [{
-            label: 'Business Standard: Stock Market LIVE, 20 Nov 2026',
-            href: 'https://www.business-standard.com/markets/news/stock-market-live-november-20-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-126112000118_1.html',
+            label: 'PIB: 240th meeting of the EPF Central Board of Trustees, 19 Nov 2026',
+            href: 'https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2338667&lang=2&reg=48',
+        }],
+    },
+    {
+        id: 'cheetah',
+        headline: 'Four cheetah cubs born at Kuno',
+        asOf: 'Reported Fri 20 Nov 2026',
+        bullets: [
+            'A two-and-a-half-year-old female cheetah brought from Botswana, KOMG 3, gave birth to four cubs in the wild at Kuno National Park in Madhya Pradesh.',
+            'This takes India\u2019s cheetah count to 62, of which 43 were born in India.',
+            'Kuno\u2019s director said all four cubs are healthy.',
+            'It is the second recorded birth in the wild since the reintroduction began in 2022, and the first to a female from Botswana.',
+        ],
+        note: 'The cheetahs and the cubs trotting around her are an illustration, not photographs.',
+        sources: [{
+            label: 'The Indian Express: Kuno gets new cheetah mother, 20 Nov 2026',
+            href: 'https://indianexpress.com/article/india/cheetah-from-botswana-is-kunos-latest-mom-4-cubs-take-indias-population-to-62-10971264/',
+        }],
+    },
+    {
+        id: 'insurance',
+        headline: 'Health insurance: clearer claims planned',
+        asOf: 'IRDAI chairman, Thu 19 Nov 2026, reported Fri 20 Nov',
+        bullets: [
+            'Insurance regulator IRDAI is forming two industry working groups on health insurance claims, expected within about 10 days.',
+            'One will look at real-time visibility of a claim: pre-authorisation, hospital discharge and final settlement.',
+            'The other will set common measures for claims and complaint handling, and standard reasons for full or partial rejection, so insurers can be compared.',
+            'These are plans. Nothing is live yet, and policyholders cannot track claims in real time because of this announcement.',
+        ],
+        note: 'The claim tracker on the wall is marked as planned. The two tables are the two working groups. It is an illustration, not a real system.',
+        sources: [{
+            label: 'ETHealthworld (PTI): IRDAI to set up industry working groups, 20 Nov 2026',
+            href: 'https://health.economictimes.indiatimes.com/news/insurance/irdai-to-set-up-industry-working-groups-to-improve-health-insurance-claim-transparency/136009988',
+        }],
+    },
+    {
+        id: 'service',
+        headline: 'Restaurant service charge stays optional',
+        asOf: 'Delhi High Court, Thu 19 Nov 2026, reported Fri 20 Nov',
+        bullets: [
+            'The Delhi High Court did not grant interim relief to the restaurant bodies NRAI and FHRAI against the single-judge order of 28 March 2025.',
+            'So restaurants and hotels still cannot automatically add a service charge to your bill. Under the consumer authority\u2019s 2022 guidelines, it has to be your choice.',
+            'The court admitted their appeal for hearing, but the earlier order stays for now.',
+            'The court spoke after the Centre\u2019s lawyer said some restaurants were still collecting it as compulsory.',
+        ],
+        note: 'This is not a new ban. It is the existing protection continuing while the appeal is heard. The restaurant and the bill are an illustration.',
+        sources: [{
+            label: 'ABP Live (Hindi): Delhi High Court on service charge, 20 Nov 2026',
+            href: 'https://www.abplive.com/business/delhi-high-court-service-charge-rule-restaurants-cannot-automatically-add-service-charge-to-bills-3217258',
         }],
     },
 ];
