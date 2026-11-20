@@ -47,6 +47,7 @@ function InfoPanel({ onClose }: { onClose: () => void }) {
             />
             <p className="nw-tap-tip">Drag to look around, pinch or scroll to zoom, tap a scene to read the story and its sources. Cars, a plane and birds pass through now and then; they are just the world being alive.</p>
             <p className="nw-build">Last build: {BUILD.at}. Each story keeps its own time below; rebuilding the page does not make the news fresher.</p>
+            <p className="nw-build">While this page is open it asks your browser to keep the screen awake, so it should not lock mid-tour. Some browsers or battery-saving modes may still ignore the request.</p>
             <Group label="The eighteen stories" heading>
                 <Rows>
                     {stories.map((s, i) => (
@@ -74,6 +75,50 @@ function InfoPanel({ onClose }: { onClose: () => void }) {
     </div>;
 }
 
+// Ask the browser to keep the screen on while this page is visible.
+// Best effort: unsupported browsers and denied requests are ignored quietly.
+type WakeLockSentinelLike = { release: () => Promise<void>; addEventListener?: (type: 'release', listener: () => void) => void };
+type WakeLockNavigator = Navigator & { wakeLock?: { request: (type: 'screen') => Promise<WakeLockSentinelLike> } };
+
+function useScreenWakeLock() {
+    useEffect(() => {
+        const nav = navigator as WakeLockNavigator;
+        if (!nav.wakeLock) return;
+        let sentinel: WakeLockSentinelLike | null = null;
+        let stopped = false;
+        const acquire = async () => {
+            if (stopped || sentinel || document.visibilityState !== 'visible') return;
+            try {
+                const s = await nav.wakeLock!.request('screen');
+                if (stopped) { s.release().catch(() => undefined); return; }
+                sentinel = s;
+                // The browser releases the lock itself (e.g. when the tab hides);
+                // forget it so we request again when the page is visible again.
+                s.addEventListener?.('release', () => { if (sentinel === s) sentinel = null; });
+            } catch {
+                // Unsupported, denied, or no user engagement yet: stay quiet.
+            }
+        };
+        const onVisibility = () => {
+            if (document.visibilityState === 'visible') acquire();
+            else sentinel = null; // the browser auto-releases a hidden page's lock
+        };
+        const onGesture = () => acquire();
+        acquire();
+        document.addEventListener('visibilitychange', onVisibility);
+        window.addEventListener('pointerdown', onGesture);
+        window.addEventListener('keydown', onGesture);
+        return () => {
+            stopped = true;
+            document.removeEventListener('visibilitychange', onVisibility);
+            window.removeEventListener('pointerdown', onGesture);
+            window.removeEventListener('keydown', onGesture);
+            sentinel?.release().catch(() => undefined);
+            sentinel = null;
+        };
+    }, []);
+}
+
 export function App() {
     const [open, setOpen] = useState<SceneId | null>(null);
     const [infoOpen, setInfoOpen] = useState(false);
@@ -81,6 +126,7 @@ export function App() {
     const story = open ? byId(open) : null;
 
     const onPick = useCallback((id: SceneId) => setOpen(id), []);
+    useScreenWakeLock();
 
     useEffect(() => { handle.current?.setHold(!!open || infoOpen); }, [open, infoOpen]);
     useEffect(() => {
