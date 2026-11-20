@@ -29,7 +29,17 @@ export function patch(ctx: Ctx, cx: number, cz: number, color: V3, edge: V3, rx:
   // cross each other and z-fight where the walls intersect.
   const out = blobOutline(rx, rz, seed);
   const rim = out.map(([x, z]) => [x * 1.05, z * 1.05] as [number, number]);
-  g.prism(rim, 0.1, edge, T(cx, ctx.TOP, cz));
+  // Rim as a true ring: outer wall plus a flat annulus ledge between the two
+  // outlines. The old full-fan rim top also spanned the area UNDER the patch
+  // top (0.04 below it), and that buried parallel surface shimmered against
+  // the patch top on some GPUs.
+  const n = out.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const P = (pt: [number, number], y: number): V3 => [cx + pt[0], ctx.TOP + y, cz + pt[1]];
+    g.quad(P(rim[i], 0), P(rim[j], 0), P(rim[j], 0.1), P(rim[i], 0.1), edge);          // outer wall
+    g.quad(P(out[i], 0.1), P(out[j], 0.1), P(rim[j], 0.1), P(rim[i], 0.1), edge);      // ledge
+  }
   g.prism(out, 0.14, color, T(cx, ctx.TOP, cz));
   ctx.addObj(g, new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as M4);
   return ctx.TOP + 0.14;
