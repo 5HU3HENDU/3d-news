@@ -7,8 +7,6 @@ import { MARKET } from '../data';
 import { T, patch } from './common';
 import { fitText, roundRect, FONT } from './text';
 
-const GREEN = '#2ee86b', RED = '#ff6060';
-
 export function buildMarket(ctx: Ctx, at: { x: number; z: number }) {
   const Y = patch(ctx, at.x, at.z, [0.86, 0.9, 0.95], [0.6, 0.68, 0.8], 6.5, 7, 14);
   const X = (x: number, y: number, z: number): M4 => T(at.x + x, Y + y, at.z + z);
@@ -95,56 +93,19 @@ export function buildMarket(ctx: Ctx, at: { x: number; z: number }) {
     ctx.addObj(walker(sk, sh), I, { anim: 'walk', phase: i / 3, amp: 0.05, walkPath: { from: f, to: t, speed: 0.05 } });
   });
 
-  // the roof display
-  const col = (u: boolean) => (u ? GREEN : RED);
-  const rows = [
-    { name: 'SENSEX', d: MARKET.sensex },
-    { name: 'NIFTY 50', d: MARKET.nifty },
-  ];
-  const triangle = (c: CanvasRenderingContext2D, x: number, y: number, s: number, upward: boolean, color: string) => {
-    c.fillStyle = color; c.beginPath();
-    if (upward) { c.moveTo(x, y - s); c.lineTo(x + s, y + s); c.lineTo(x - s, y + s); }
-    else { c.moveTo(x, y + s); c.lineTo(x + s, y - s); c.lineTo(x - s, y - s); }
-    c.closePath(); c.fill();
-  };
+  // the roof display: the day's reviewed story leads; exact closing levels and dated status below
   const screen = ctx.makeTex(1024, 512, (c, w, h) => {
-    const t = performance.now() / 1000;
     roundRect(c, 6, 6, w - 12, h - 12, 36);
     c.fillStyle = '#0b1220'; c.fill();
     c.lineWidth = 8; c.strokeStyle = '#8fb4ff'; c.stroke();
-    rows.forEach((r, i) => {
-      const y0 = 26 + i * 196;
-      const color = col(r.d.up);
-      c.textBaseline = 'middle';
-      c.textAlign = 'left'; c.fillStyle = '#cdd8ee'; c.font = `800 46px ${FONT}`;
-      c.fillText(r.name, 44, y0 + 40);
-      c.fillStyle = color; c.font = `900 84px ${FONT}`;
-      c.fillText(r.d.value, 44, y0 + 112);
-      triangle(c, 52, y0 + 168, 16, r.d.up, color);
-      c.font = `800 38px ${FONT}`; c.fillStyle = color;
-      c.fillText(`${r.d.points}  (${r.d.pct})`, 84, y0 + 168);
-      // two-point trend chart: Thursday's close to Friday's close
-      const cx0 = 700, cx1 = 960, cy0 = y0 + 40, cy1 = y0 + 140;
-      roundRect(c, cx0 - 24, y0 + 6, cx1 - cx0 + 48, 172, 18);
-      c.fillStyle = 'rgba(255,255,255,.06)'; c.fill();
-      const a = r.d.earlier.value, b = r.d.now;
-      const lo = Math.min(a, b), hi = Math.max(a, b), span = Math.max(1e-6, hi - lo);
-      const ya = cy1 - ((a - lo) / span) * (cy1 - cy0), yb = cy1 - ((b - lo) / span) * (cy1 - cy0);
-      c.lineWidth = 8; c.strokeStyle = color; c.lineCap = 'round';
-      c.beginPath(); c.moveTo(cx0, ya); c.lineTo(cx1, yb); c.stroke();
-      const k = (t * 0.45) % 1;
-      const px = cx0 + (cx1 - cx0) * k, py = ya + (yb - ya) * k;
-      c.fillStyle = '#fff'; c.beginPath(); c.arc(px, py, 10, 0, Math.PI * 2); c.fill();
-      c.fillStyle = color; c.beginPath(); c.arc(cx0, ya, 8, 0, Math.PI * 2); c.arc(cx1, yb, 8, 0, Math.PI * 2); c.fill();
-      c.font = `700 24px ${FONT}`; c.fillStyle = '#9fb0cf';
-      c.textAlign = 'left'; c.fillText('THU', cx0 - 14, y0 + 164);
-      c.textAlign = 'right'; c.fillText('FRI CLOSE', cx1 + 14, y0 + 164);
-    });
-    fitText(c, `CLOSING LEVELS  |  ${MARKET.date.toUpperCase()}  |  NOT LIVE`, w / 2, 464, w - 70, 32, 800, '#ffd24a');
+    fitText(c, 'Markets close at 9-month highs', w / 2, 96, w - 60, 84, 900, '#ffffff');
+    fitText(c, 'Sensex +898 (+1.08%) · Nifty +286 (+1.12%)', w / 2, 214, w - 50, 62, 800, '#ffd24a');
+    fitText(c, "Banks lead Friday's rally", w / 2, 308, w - 50, 62, 800, '#7fd99a');
+    c.strokeStyle = 'rgba(143,180,255,.35)'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(60, 356); c.lineTo(w - 60, 356); c.stroke();
+    fitText(c, `SENSEX ${MARKET.sensex.value} (${MARKET.sensex.points})  ·  NIFTY 50 ${MARKET.nifty.value} (${MARKET.nifty.points})`, w / 2, 404, w - 70, 38, 700, '#9fb0cf');
+    fitText(c, `${MARKET.date.toUpperCase()} CLOSE  |  NOT LIVE`, w / 2, 462, w - 70, 34, 800, '#ffd24a');
   });
   const base = X(0, 6.5, -0.4);
   ctx.addDecal({ tex: screen, model: base, w: 7.6, h: 3.8, billboard: true, glow: 0.5 });
-  // gentle redraw so the little chart dot travels (about 8 times a second)
-  let last = 0;
-  ctx.onFrame((t) => { if (t - last > 0.12) { last = t; screen.redraw(); } });
 }

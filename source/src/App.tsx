@@ -13,7 +13,7 @@ function Scene({ onPick, handle }: { onPick: (id: SceneId) => void; handle: Reac
         return () => { handle.current?.dispose(); handle.current = null; };
     }, [onPick, handle]);
     return <div className="nw-scene">
-        <canvas ref={ref} className="nw-canvas" aria-label="A floating meadow with eighteen tiny 3D scenes: a flat where two people play GTA VI, the Odisha coast at cyclone landfall, a cricket ground with the India and New Zealand score, a stock exchange showing Sensex and Nifty, an EPFO office with a piggy bank, cheetah cubs at Kuno, a health-insurance claims hall and a restaurant with a bill. Cars drive winding roads between them and a plane crosses the sky." />
+        <canvas ref={ref} className="nw-canvas" aria-label="A floating meadow with nineteen tiny 3D scenes: a flat where four friends play GTA VI, the Odisha coast as cyclone Akvan weakens, a cricket ground with the India and New Zealand score, a stock exchange showing Sensex and Nifty, an EPFO office with a queue outside, cheetah cubs at Kuno, a restaurant with a bill, a PUC testing bay, a foggy railway platform, a parked SpiceJet aircraft, Uttarakhand homestays, a hospital billing desk, a living room with an air purifier, a pharmacy counter, a Signal phone behind a shield, Voyager 1 in deep space, a travel-insurance payout bar, a toll plaza with a local pass lane, and a family checking motor insurance covers. Cars drive winding roads between them and a plane crosses the sky." />
     </div>;
 }
 
@@ -41,14 +41,14 @@ function InfoPanel({ onClose }: { onClose: () => void }) {
             <button type="button" className="nw-close nw-info-close" onClick={onClose} aria-label="Close information" autoFocus>×</button>
             <Header
                 title="The news, in miniature"
-                fact="Eighteen stories, reports 16-20 Nov 2026"
+                fact="Nineteen stories, reports 13-21 Nov 2026"
                 factKnown
-                intro="One floating meadow, eighteen tiny 3D stories. The camera roams by itself: it pulls back, picks a story at random, drops in and slowly circles it."
+                intro="One floating meadow, nineteen tiny 3D stories. The camera roams by itself: it pulls back, picks a story at random, drops in and slowly circles it."
             />
             <p className="nw-tap-tip">Drag to look around, pinch or scroll to zoom, tap a scene to read the story and its sources. Cars, a plane and birds pass through now and then; they are just the world being alive.</p>
             <p className="nw-build">Last build: {BUILD.at}. Each story keeps its own time below; rebuilding the page does not make the news fresher.</p>
             <p className="nw-build">While this page is open it asks your browser to keep the screen awake, so it should not lock mid-tour. Some browsers or battery-saving modes may still ignore the request.</p>
-            <Group label="The eighteen stories" heading>
+            <Group label="The nineteen stories" heading>
                 <Rows>
                     {stories.map((s, i) => (
                         <Row key={s.id} number={i + 1} name={s.headline} detail={`${s.asOf.replace(/\.$/, '')}. ${s.bullets[0]}`} />
@@ -64,13 +64,13 @@ function InfoPanel({ onClose }: { onClose: () => void }) {
                     Every scene is a hand-built toy model and a visual metaphor. Nothing here is real video. The cyclone scene shows rain, a rough sea, small puddles and people walking to a shelter, not destruction.
                 </Callout>
                 <Callout title="Plans and approvals" tone="note">
-                    Data-consent services are in preparation, and the PUC commencement date has not been established here. No existing certificate is automatically extended. The health-insurance claim tracker is only planned, and the EPFO changes were approved by its board on 19 November. The scenes show the announcements, not systems or rules that are already running.
+                    The PUC commencement date has not been established here, and no existing certificate is automatically extended. The EPFO changes were approved by its board on 19 November, with no start date announced. The four-part motor policy structure applies to new policies from 15 December. The FASTag local annual pass sells at eligible plazas from 1 November, and on the Rajmargyatra app from 1 December. The scenes show the announcements, not systems or rules that are already running.
                 </Callout>
                 <Callout title="Fixed numbers, not live" tone="note">
                     The stock market board shows the closing levels of 20 November and the cricket board shows the day 2 stumps score. Neither updates by itself. The page is refreshed by hand.
                 </Callout>
             </Group>
-            <Closing>Facts checked against the linked sources on the evening of 20 Nov 2026, around 8-9 PM IST.</Closing>
+            <Closing>Facts checked against the linked sources on 20-21 Nov 2026.</Closing>
         </div>
     </div>;
 }

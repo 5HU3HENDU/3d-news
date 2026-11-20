@@ -70,7 +70,6 @@ export function buildGta(ctx: Ctx, at: { x: number; z: number }) {
   });
   ctx.addDecal({ tex: label('PS5', '', '#1d4fd8'), model: L(1.45, 1.38, -1.2), w: 0.5, h: 0.25, billboard: true });
   ctx.addDecal({ tex: label('XBOX', 'Series X|S', '#2a7d2a'), model: L(-1.45, 1.38, -1.2), w: 0.6, h: 0.3, billboard: true });
-
   // couch
   {
     const g = new GeoBuilder();
@@ -101,6 +100,23 @@ export function buildGta(ctx: Ctx, at: { x: number; z: number }) {
   }
   figure(-0.7, 1.95, C.skin, C.shirtA, 0);
   figure(0.7, 1.95, C.skin2, C.shirtB, Math.PI * 0.7);
+  // two more friends standing behind the couch, watching
+  function standing(x: number, z: number, skin: V3, shirt: V3, phase: number) {
+    const g = new GeoBuilder();
+    const S = 1.35;
+    const M = mul(L(x, 0, z), m4scale(S, S, S));
+    const F = (px: number, py: number, pz: number) => mul(M, T(px, py, pz));
+    g.cyl(0.17, 0.15, 0.46, 10, shirt, F(0, 0.62, 0));
+    g.sphere(0.17, 12, 8, skin, F(0, 1.2, 0));
+    g.sphere(0.175, 12, 8, [0.2, 0.14, 0.1], mul(F(0, 1.28, 0.04), m4scale(1, 0.55, 1)));
+    g.box(0.12, 0.5, 0.12, C.pants, F(-0.09, 0.25, 0));
+    g.box(0.12, 0.5, 0.12, C.pants, F(0.09, 0.25, 0));
+    g.box(0.09, 0.36, 0.09, shirt, mul(F(-0.24, 0.78, 0), m4rotZ(0.2)));
+    g.box(0.09, 0.36, 0.09, shirt, mul(F(0.24, 0.78, 0), m4rotZ(-0.2)));
+    return ctx.addObj(g, I, { anim: 'bob', phase, amp: 0.03, glow: 0.05, glowCol: [0.4, 1, 0.6] });
+  }
+  standing(-0.55, 2.75, C.skin2, [0.5, 0.7, 0.4], Math.PI * 0.35);
+  standing(0.6, 2.8, C.skin, [0.75, 0.45, 0.6], Math.PI * 1.1);
   { // coffee table, pizza, cola
     const g = new GeoBuilder();
     g.box(1.3, 0.07, 0.65, [0.55, 0.4, 0.28], L(0, 0.38, -0.45));
@@ -126,7 +142,7 @@ export function buildGta(ctx: Ctx, at: { x: number; z: number }) {
   }
 
   // big readable title sign standing behind the flat
-  const sign = ctx.makeTex(1024, 256, (c, w, h) => {
+  const sign = ctx.makeTex(1024, 364, (c, w, h) => {
     roundRect(c, 6, 6, w - 12, h - 12, 40);
     const g = c.createLinearGradient(0, 0, w, h);
     g.addColorStop(0, '#2a1450'); g.addColorStop(1, '#8a1f6a');
@@ -134,8 +150,9 @@ export function buildGta(ctx: Ctx, at: { x: number; z: number }) {
     c.lineWidth = 8; c.strokeStyle = '#ffb347'; c.stroke();
     const tg = c.createLinearGradient(0, 30, 0, 170);
     tg.addColorStop(0, '#fff'); tg.addColorStop(1, '#ff9ad0');
-    fitText(c, 'GTA VI IS OUT', w / 2, 98, w - 120, 150, 900, tg);
-    fitText(c, 'NOW AVAILABLE ON PS5 AND XBOX SERIES X|S', w / 2, 205, w - 100, 44, 800, '#ffd36b');
+    fitText(c, 'GTA VI is out', w / 2, 100, w - 120, 120, 900, tg);
+    fitText(c, 'PS5 · Xbox Series X|S', w / 2, 214, w - 100, 56, 800, '#ffd36b');
+    fitText(c, 'From ₹5,999 in India', w / 2, 302, w - 100, 56, 800, '#ffffff');
   });
   {
     const g = new GeoBuilder();
@@ -143,6 +160,6 @@ export function buildGta(ctx: Ctx, at: { x: number; z: number }) {
     g.cyl(0.08, 0.08, 4.0, 8, [0.4, 0.38, 0.42], T(at.x + 3.0, Y, at.z - 3.5));
     ctx.addObj(g, new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as M4);
   }
-  ctx.addDecal({ tex: sign, model: T(at.x, Y + 5.2, at.z - 3.45), w: 8.4, h: 2.1, billboard: true });
+  ctx.addDecal({ tex: sign, model: T(at.x, Y + 5.35, at.z - 3.45), w: 8.4, h: 2.99, billboard: true });
   void FONT;
 }

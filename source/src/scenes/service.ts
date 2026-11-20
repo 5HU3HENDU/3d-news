@@ -3,7 +3,7 @@
 import { GeoBuilder, M4, V3, m4mul, m4rotX, m4rotY } from '../geo';
 import type { Ctx } from '../world';
 import { T, patch } from './common';
-import { IDENT as I, banner, personGeo } from './kit';
+import { IDENT as I, bannerEx, personGeo } from './kit';
 import { FONT, fitText, roundRect } from './text';
 
 export function buildService(ctx: Ctx, at: { x: number; z: number }) {
@@ -69,8 +69,13 @@ export function buildService(ctx: Ctx, at: { x: number; z: number }) {
     c.font = `700 44px ${FONT}`; c.fillStyle = '#4a4438'; c.textBaseline = 'middle';
     c.textAlign = 'left'; c.fillText('Food, drinks', 44, 168);
     c.fillText('Taxes', 44, 232);
-    c.fillStyle = '#1c7c43'; c.font = `900 46px ${FONT}`;
+    c.fillStyle = '#8a8578'; c.font = `900 46px ${FONT}`;
     c.fillText('Service charge', 44, 312);
+    { // crossed out: it cannot be added automatically
+      const tw = c.measureText('Service charge').width;
+      c.strokeStyle = '#d43a2a'; c.lineWidth = 8; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(38, 312); c.lineTo(50 + tw, 312); c.stroke();
+    }
     roundRect(c, 30, 344, w - 60, 142, 22); c.fillStyle = '#e4f6ea'; c.fill();
     fitText(c, 'YOUR CHOICE', w / 2, 398, w - 80, 70, 900, '#14602f');
     fitText(c, 'NOT AUTOMATIC', w / 2, 456, w - 90, 44, 800, '#14602f');
@@ -104,5 +109,5 @@ export function buildService(ctx: Ctx, at: { x: number; z: number }) {
     },
   });
 
-  banner(ctx, at, Y, 'SERVICE CHARGE STAYS OPTIONAL', 'DELHI HC REFUSED TO PAUSE THE EARLIER ORDER', '#5a2018', '#c2562f', '#ffeccf', '#ffd9a8');
+  bannerEx(ctx, at, Y, ['Service Charges', 'Not compulsory', 'You can ask to remove'], '#5a2018', '#c2562f', '#ffeccf', '#ffd9a8');
 }

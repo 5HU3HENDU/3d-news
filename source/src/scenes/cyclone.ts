@@ -178,21 +178,22 @@ export function buildCyclone(ctx: Ctx, at: { x: number; z: number }) {
   }
   ctx.addDecal({ tex: gop, model: TT(2.2, Y + 1.35, 0.1), w: 2.4, h: 0.6, billboard: true });
 
-  // headline banner
-  const banner = ctx.makeTex(1024, 256, (c, w, h) => {
+  // headline banner: weakening storm, people moved to safety, alerts still on
+  const banner = ctx.makeTex(1024, 364, (c, w, h) => {
     roundRect(c, 6, 6, w - 12, h - 12, 40);
     const g = c.createLinearGradient(0, 0, w, h);
     g.addColorStop(0, '#16334d'); g.addColorStop(1, '#3b6f93');
     c.fillStyle = g; c.fill();
-    c.lineWidth = 8; c.strokeStyle = '#e8f4fb'; c.stroke();
-    fitText(c, 'CYCLONE AKVAN HITS ODISHA', w / 2, 92, w - 90, 104, 900, '#ffffff');
-    fitText(c, 'LANDFALL NEAR GOPALPUR, 7:30 TO 8:30 AM TODAY', w / 2, 187, w - 100, 46, 800, '#bfe3f5');
+    c.lineWidth = 10; c.strokeStyle = '#e8f4fb'; c.stroke();
+    fitText(c, 'Akvan weakens over Odisha', w / 2, 82, w - 90, 92, 900, '#ffffff');
+    fitText(c, '4.4 lakh moved to safety', w / 2, 200, w - 100, 62, 800, '#ffe9a8');
+    fitText(c, 'Heavy rain alerts remain', w / 2, 300, w - 100, 62, 800, '#bfe3f5');
   });
   {
     const g = new GeoBuilder();
-    g.cyl(0.08, 0.08, 3.8, 8, [0.4, 0.42, 0.46], T(at.x - 3.6, Y, at.z - 5.4));
-    g.cyl(0.08, 0.08, 3.8, 8, [0.4, 0.42, 0.46], T(at.x + 3.6, Y, at.z - 5.4));
+    g.cyl(0.08, 0.08, 4.4, 8, [0.4, 0.42, 0.46], T(at.x - 3.6, Y, at.z - 5.4));
+    g.cyl(0.08, 0.08, 4.4, 8, [0.4, 0.42, 0.46], T(at.x + 3.6, Y, at.z - 5.4));
     ctx.addObj(g, I);
   }
-  ctx.addDecal({ tex: banner, model: T(at.x, Y + 5.0, at.z - 5.35), w: 8.4, h: 2.1, billboard: true });
+  ctx.addDecal({ tex: banner, model: T(at.x, Y + 5.35, at.z - 5.35), w: 8.4, h: 2.98, billboard: true, glow: 0.12 });
 }

@@ -3,7 +3,7 @@
 import { GeoBuilder, M4, V3, m4mul, m4rotX, m4rotY, m4rotZ, m4scale } from '../geo';
 import type { Ctx } from '../world';
 import { T, patch, seeded } from './common';
-import { IDENT as I, banner } from './kit';
+import { IDENT as I, bannerEx } from './kit';
 import { fitText, roundRect } from './text';
 
 const FUR: V3 = [0.93, 0.76, 0.36], BELLY: V3 = [0.99, 0.91, 0.72], SPOT: V3 = [0.2, 0.14, 0.1];
@@ -92,10 +92,11 @@ export function buildCheetah(ctx: Ctx, at: { x: number; z: number }) {
   }
 
   // Kuno signpost and the counter board
-  const sign = ctx.makeTex(512, 128, (c, w, h) => {
-    roundRect(c, 4, 4, w - 8, h - 8, 20); c.fillStyle = '#6b4a2b'; c.fill();
-    c.lineWidth = 6; c.strokeStyle = '#3f2a16'; c.stroke();
-    fitText(c, 'KUNO NATIONAL PARK', w / 2, h / 2, w - 40, 56, 900, '#fbe9c8');
+  const sign = ctx.makeTex(768, 224, (c, w, h) => {
+    roundRect(c, 4, 4, w - 8, h - 8, 24); c.fillStyle = '#6b4a2b'; c.fill();
+    c.lineWidth = 8; c.strokeStyle = '#3f2a16'; c.stroke();
+    fitText(c, 'KUNO NATIONAL PARK', w / 2, 84, w - 40, 74, 900, '#fbe9c8');
+    fitText(c, 'MADHYA PRADESH', w / 2, 168, w - 60, 48, 800, '#e8cf9e');
   });
   {
     const g = new GeoBuilder();
@@ -103,13 +104,12 @@ export function buildCheetah(ctx: Ctx, at: { x: number; z: number }) {
     g.cyl(0.06, 0.06, 1.0, 7, [0.4, 0.28, 0.18], X(-1.3, 0, 3.4));
     ctx.addObj(g, I);
   }
-  ctx.addDecal({ tex: sign, model: X(-2.0, 0.95, 3.4), w: 1.8, h: 0.5, billboard: true });
+  ctx.addDecal({ tex: sign, model: X(-2.0, 1.05, 3.4), w: 2.4, h: 0.7, billboard: true });
   const count = ctx.makeTex(512, 384, (c, w, h) => {
     roundRect(c, 6, 6, w - 12, h - 12, 34); c.fillStyle = '#2f5d34'; c.fill();
     c.lineWidth = 8; c.strokeStyle = '#fbe9c8'; c.stroke();
     fitText(c, 'CHEETAHS IN INDIA', w / 2, 70, w - 40, 44, 800, '#e5f3df');
-    fitText(c, '62', w / 2, 200, w - 40, 190, 900, '#ffd36b');
-    fitText(c, '43 BORN HERE', w / 2, 320, w - 50, 42, 800, '#e5f3df');
+    fitText(c, '62', w / 2, 210, w - 40, 190, 900, '#ffd36b');
   });
   {
     const g = new GeoBuilder();
@@ -119,5 +119,5 @@ export function buildCheetah(ctx: Ctx, at: { x: number; z: number }) {
   ctx.addDecal({ tex: count, model: X(3.3, 1.95, 2.0), w: 2.1, h: 1.58, billboard: true });
   void m4rotX;
 
-  banner(ctx, at, Y, '4 CHEETAH CUBS BORN AT KUNO', "INDIA'S CHEETAH COUNT IS NOW 62", '#4a3512', '#a8782a', '#fbe9c8', '#ffe2a0');
+  bannerEx(ctx, at, Y, ['Four cheetah cubs born at Kuno', "India's cheetah count rises to 62", '43 were born in India'], '#4a3512', '#a8782a', '#fbe9c8', '#ffe2a0');
 }

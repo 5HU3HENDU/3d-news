@@ -1,9 +1,9 @@
 import { BUILD_AT } from './buildStamp';
 // Story facts and the market snapshot. Everything shown in the world and in the
 // info panels comes from here, so a fact is changed in exactly one place.
-// Every figure below was read from the linked sources on 20 Nov 2026 (refreshed in the evening).
+// Every figure below was read from the linked sources on 20-21 Nov 2026.
 
-export type SceneId = 'gta' | 'cyclone' | 'cricket' | 'market' | 'epfo' | 'cheetah' | 'insurance' | 'service' | 'puc' | 'access' | 'consent' | 'groups' | 'fog' | 'flights' | 'homestay' | 'cancercost' | 'air' | 'parenting';
+export type SceneId = 'gta' | 'cyclone' | 'cricket' | 'market' | 'epfo' | 'cheetah' | 'service' | 'puc' | 'fog' | 'flights' | 'homestay' | 'cancercost' | 'air' | 'antibiotic' | 'signal' | 'voyager' | 'travel' | 'fastag' | 'motor';
 
 export interface Source { label: string; href: string }
 
@@ -39,45 +39,59 @@ export const CRICKET = {
 export const stories: Story[] = [
     {
         id: 'gta',
-        headline: 'Game night: GTA VI is out',
-        asOf: 'Announced Thu 19 Nov 2026',
+        headline: 'GTA VI is out',
+        asOf: 'Released Thu 19 Nov 2026',
         bullets: [
-            'Rockstar Games, a Take-Two label, announced on 19 November 2026 that Grand Theft Auto VI is now available on PlayStation 5 and Xbox Series X|S.',
-            'Only those two consoles are named in the announcement.',
-            'The release calls the game the highest rated of all time and quotes early reviews. That is the company\u2019s own claim.',
+            'Grand Theft Auto VI launched on 19 November 2026 on PlayStation 5 and Xbox Series X|S, thirteen years after GTA V. No PC version has been announced.',
+            'In India it costs ₹5,999 for the Standard Edition and ₹7,499 for Ultimate. It is download-only, with no disc even in stores, and needs up to 212GB of storage.',
+            'Analytics firm Sensor Tower estimates 24.5 million pre-orders worth $2.36 billion, a record. PlayStation and Xbox both called it their most pre-ordered game ever.',
+            'Critics give it 99 on Metacritic from 151 reviews, all positive. That is a review score; the "highest rated of all time" line is Take-Two\u2019s own claim.',
         ],
-        note: 'The two players and their glowing TV are an illustration, not gameplay footage. Nothing newer than the 19 November announcement was found on 20 November.',
-        sources: [{
-            label: 'Take-Two Interactive press release, 19 Nov 2026',
-            href: 'https://www.take2games.com/ir/news/rockstar-games-announces-grand-theft-auto-vi-now-available',
-        }],
+        note: 'The four friends, their couch and the glowing TV are an illustration, not gameplay footage.',
+        sources: [
+            {
+                label: 'Take-Two Interactive press release, 19 Nov 2026',
+                href: 'https://www.take2games.com/ir/news/rockstar-games-announces-grand-theft-auto-vi-now-available',
+            },
+            {
+                label: 'The Hindu: GTA VI is here, 19 Nov 2026',
+                href: 'https://www.thehindu.com/sci-tech/technology/gta-vi-is-here-and-india-has-taken-the-day-off/article71718783.ece',
+            },
+            {
+                label: 'Moneycontrol: price and storage details, 19 Nov 2026',
+                href: 'https://www.moneycontrol.com/technology/gta-vi-now-available-in-india-on-ps5-and-xbox-series-x-s-price-storage-gameplay-details-and-more-article-14084000.html',
+            },
+            {
+                label: 'Metacritic: Grand Theft Auto VI',
+                href: 'https://www.metacritic.com/game/grand-theft-auto-vi/',
+            },
+        ],
     },
     {
         id: 'cyclone',
-        headline: 'Cyclone Akvan crossed the Odisha coast and is weakening',
-        asOf: 'Fri 20 Nov 2026, India Today report of 4:37 PM IST',
+        headline: 'Cyclone Akvan weakens over Odisha',
+        asOf: 'Fri 20 Nov 2026, evening reports',
         bullets: [
-            'The India Meteorological Department said Akvan crossed the south Odisha and north Andhra Pradesh coast close to Gopalpur between 7:30 and 8:30 AM on 20 November, with winds of 70 to 80 kmph gusting to 90 kmph.',
-            'By 11:30 AM it had weakened into a deep depression. IMD expects it to become a depression, then a well-marked low-pressure area by late night on 20 November.',
-            'Heavy rain fell in coastal Odisha. Patrapur in Ganjam recorded the most, 209 mm in 24 hours. Rain may continue in parts of Odisha and neighbouring West Bengal.',
-            'State officials reported no major damage or loss of life in the initial assessment. More than 3.7 lakh people were moved to safer places beforehand.',
-            'Earlier, the Odisha Chief Secretary said low-lying urban areas were filled with rainwater. The scene shows only small puddles on low ground, and no flooded homes or streets, because none were reported.',
+            'The India Meteorological Department said Akvan crossed the coast close to Gopalpur between 7:30 and 8:30 AM on 20 November, with winds of 70 to 80 kmph gusting to 90 kmph. It weakened to a deep depression by 11:30 AM and a depression by evening, and was expected to become a well-marked low-pressure area late at night.',
+            'Odisha\u2019s Disaster Management Minister said over 4.40 lakh people were moved to safer places, and reported no major damage or loss of life so far. That is an evening assessment, not a final count.',
+            'Heavy rain alerts remain: an orange alert covers 14 districts and fishermen were advised to stay off the sea till Saturday. Patrapur in Ganjam recorded 209 mm of rain in 24 hours.',
+            'East Coast Railway cancelled 45 trains and rescheduled others for the storm.',
         ],
-        note: 'The swirl is a toy model of the storm at the coast. The wind makes the ODISHA letters jump, and the line of people walking to the shelter is the evacuation. No destruction is depicted.',
+        note: 'The swirl is a toy model of the storm breaking up at the coast. The wind makes the ODISHA letters jump, and the line of people walking to the shelter is the evacuation. No destruction is depicted, and rain alerts are still in force.',
         sources: [
+            {
+                label: 'The Week (PTI): Akvan weakens into a depression, 20 Nov 2026',
+                href: 'https://www.theweek.in/wire-updates/national/2026/11/20/cyclone-akvan-weakens-into-depression-after-landfall-in-odisha-no-major-damage-flood-threat.html',
+            },
             {
                 label: 'India Today: Cyclone Akvan to weaken by tonight, 20 Nov 2026',
                 href: 'https://www.indiatoday.in/science/story/cyclone-akvan-weakens-after-odisha-landfall-imd-rain-storm-disaster-3043155-2026-11-20',
-            },
-            {
-                label: 'The Hindu: Cyclone Akvan crosses Odisha coast, 20 Nov 2026',
-                href: 'https://www.thehindu.com/news/national/cyclone-akvan-odisha-andhra-pradesh-landfall-imd-updates/article71722866.ece',
             },
         ],
     },
     {
         id: 'cricket',
-        headline: 'Cricket: India reply strongly in Wellington',
+        headline: 'India reply strongly in Wellington',
         asOf: 'Day 2 stumps, Fri 20 Nov 2026 (New Zealand time)',
         bullets: [
             `New Zealand were all out for ${CRICKET.nz} in the first Test at the Basin Reserve, Wellington. Henry Nicholls finished unbeaten on 175 and Glenn Phillips made 118, in a stand of 216.`,
@@ -98,12 +112,12 @@ export const stories: Story[] = [
     },
     {
         id: 'market',
-        headline: 'Markets: Sensex and Nifty end higher',
+        headline: 'Markets close at 9-month highs',
         asOf: `${MARKET.date}, closing levels. Not live.`,
         bullets: [
-            `The Sensex closed up ${MARKET.sensex.points} points (${MARKET.sensex.pct}) at ${MARKET.sensex.value}.`,
-            `The Nifty 50 closed up ${MARKET.nifty.points} points (${MARKET.nifty.pct}) at ${MARKET.nifty.value}.`,
-            'Banking stocks led: the Nifty Bank index rose about 2.5 per cent. Breadth was weak, with 1,582 stocks advancing and 2,456 declining on the exchange.',
+            `The Sensex closed up ${MARKET.sensex.points} points (${MARKET.sensex.pct}) at ${MARKET.sensex.value}, and the Nifty 50 closed up ${MARKET.nifty.points} points (${MARKET.nifty.pct}) at ${MARKET.nifty.value}.`,
+            'Both indices closed at nine-month highs and gained about 2.6 to 2.9 per cent over the week, rising even as Asian equities had their worst week since 2020.',
+            'Banking stocks led: the Nifty Bank index rose about 2.5 per cent, helped by foreign investor inflows, a stronger rupee and cooling crude. Breadth was weak, with 1,582 stocks advancing and 2,456 declining.',
             'The little chart joins Thursday\u2019s close, worked out from the day\u2019s change, to Friday\u2019s close. It is not an intraday chart.',
         ],
         note: 'Green means up, red would mean down. These are the final closing numbers for 20 November. The page does not refresh them, and Monday\u2019s trading will change the picture.',
@@ -116,19 +130,23 @@ export const stories: Story[] = [
                 label: 'ET Now: Closing Bell, Nifty and Sensex end higher',
                 href: 'https://www.etnownews.com/markets/closing-bell-nifty-sensex-end-higher-despite-weak-market-breadth-banking-stocks-steal-the-show-article-156541891',
             },
+            {
+                label: 'BusinessLine: markets at nine-month highs, 20 Nov 2026',
+                href: 'https://www.thehindubusinessline.com/markets/sensex-nifty50-today-stock-market-live-updates-20th-november-2026/article71720685.ece',
+            },
         ],
     },
     {
         id: 'epfo',
-        headline: 'EPFO board eases PF withdrawals',
+        headline: 'EPFO approves easier PF withdrawals',
         asOf: 'Board meeting Thu 19 Nov 2026, PIB release 6:28 PM',
         bullets: [
             'The EPFO Central Board of Trustees approved a lower minimum balance for PF members: down from 25% to 10% of contributions.',
             'It also cut the waiting period for a final PF withdrawal from 12 months to 2 months.',
             'It approved a voluntary Systematic Withdrawal Plan, so retiring members can take their PF savings in regular instalments instead of one lump sum. Amendments to the EPF scheme are to be notified after the Labour Ministry approves.',
-            'The release does not say when the new minimum balance and waiting period take effect.',
+            'The release does not say when the new minimum balance and waiting period take effect. The start date is not announced.',
         ],
-        note: 'The piggy bank, coin tap and little office are an illustration. The two boards show the numbers from the release, and the pot with a tap stands for the Systematic Withdrawal Plan.',
+        note: 'The office, the queue outside it and the boards are an illustration. The board numbers come from the 19 November release, which does not say when the changes start.',
         sources: [{
             label: 'PIB: 240th meeting of the EPF Central Board of Trustees, 19 Nov 2026',
             href: 'https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2338667&lang=2&reg=48',
@@ -151,28 +169,12 @@ export const stories: Story[] = [
         }],
     },
     {
-        id: 'insurance',
-        headline: 'Health insurance: clearer claims planned',
-        asOf: 'IRDAI chairman, Thu 19 Nov 2026, reported Fri 20 Nov',
-        bullets: [
-            'Insurance regulator IRDAI is forming two industry working groups on health insurance claims, expected within about 10 days.',
-            'One will look at real-time visibility of a claim: pre-authorisation, hospital discharge and final settlement.',
-            'The other will set common measures for claims and complaint handling, and standard reasons for full or partial rejection, so insurers can be compared.',
-            'These are plans. Nothing is live yet, and policyholders cannot track claims in real time because of this announcement.',
-        ],
-        note: 'The claim tracker on the wall is marked as planned. The two tables are the two working groups. It is an illustration, not a real system.',
-        sources: [{
-            label: 'ETHealthworld (PTI): IRDAI to set up industry working groups, 20 Nov 2026',
-            href: 'https://health.economictimes.indiatimes.com/news/insurance/irdai-to-set-up-industry-working-groups-to-improve-health-insurance-claim-transparency/136009988',
-        }],
-    },
-    {
         id: 'service',
-        headline: 'Restaurant service charge stays optional',
+        headline: 'Service charges are not compulsory',
         asOf: 'Delhi High Court, Thu 19 Nov 2026, reported Fri 20 Nov',
         bullets: [
             'The Delhi High Court did not grant interim relief to the restaurant bodies NRAI and FHRAI against the single-judge order of 28 March 2025.',
-            'So restaurants and hotels still cannot automatically add a service charge to your bill. Under the consumer authority\u2019s 2022 guidelines, it has to be your choice.',
+            'So restaurants and hotels still cannot automatically add a service charge to your bill. Under the consumer authority\u2019s 2022 guidelines, it has to be your choice, and you can ask to remove it.',
             'The court admitted their appeal for hearing, but the earlier order stays for now.',
             'The court spoke after the Centre\u2019s lawyer said some restaurants were still collecting it as compulsory.',
         ],
@@ -182,186 +184,235 @@ export const stories: Story[] = [
             href: 'https://www.abplive.com/business/delhi-high-court-service-charge-rule-restaurants-cannot-automatically-add-service-charge-to-bills-3217258',
         }],
     },
-{
-    "id": "puc",
-    "headline": "PUC validity changes announced",
-    "asOf": "Reports 19-20 Nov 2026; commencement date not established",
-    "bullets": [
-        "MoRTH announced revised PUC validity periods based on vehicle age and emission standard. The published schedule gives private BS-VI vehicles up to six years old a three-year interval, and commercial BS-VI vehicles of that age two years.",
-        "The schedule lists six months for BS-IV and three months for BS-I, II and III. Older BS-VI categories have shorter intervals.",
-        "This does not automatically extend an existing certificate. The new period applies at the first renewal after the amendment takes effect. The PIB release mixes amended and proposed wording and does not establish its commencement date. Check current requirements before delaying a renewal."
-    ],
-    "note": "The testing bay and certificate are an illustration of announced changes, not a live certificate checker.",
-    "sources": [
-        {
-            "label": "The Indian Express, updated 20 Nov",
-            "href": "https://indianexpress.com/article/india/puc-certificate-validity-rules-2026-bs-6-10969816/"
-        },
-        {
-            "label": "Lallantop, 20 Nov",
-            "href": "https://www.thelallantop.com/auto/post/puc-certificate-new-rules-bs6-vehicles-bs-1-bs-2-bs-3-india"
-        },
-        {
-            "label": "PIB, 19 Nov",
-            "href": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2338468"
-        }
-    ]
-},
-{
-    "id": "access",
-    "headline": "Verification should not lock people out",
-    "asOf": "Reported 17 Nov; updated 18 Nov 2026",
-    "bullets": [
-        "A Supreme Court application raises barriers that eye-blink and face-authentication prompts create for blind people and others with disabilities.",
-        "The concerns span banking and LPG verification, making this a wider essential-service access issue.",
-        "The court sought responses from the Centre and other respondents. The report gives 16 December as the response deadline. This concerns enforcement of an April 2025 accessibility judgment, not a new accessible process already delivered."
-    ],
-    "note": "A user and a verification counter illustrate the access problem. No new relief or service availability is implied.",
-    "sources": [
-        {
-            "label": "The Indian Express, updated 18 Nov",
-            "href": "https://indianexpress.com/article/legal-news/bank-lpg-apps-demand-eye-blink-for-kyc-locking-out-blind-over-to-sc-10966771/"
-        }
-    ]
-},
-{
-    "id": "consent",
-    "headline": "A future hub for data permissions",
-    "asOf": "Khabargaon report, 16 Nov 2026",
-    "bullets": [
-        "Consent managers are intended to let people view, manage and withdraw permissions they give companies to use personal data.",
-        "The report says a registration portal opened on 14 November for eligible companies seeking to provide this service under the DPDP framework.",
-        "Provider registration is the development being reported. This does not mean a universal consumer dashboard is already available."
-    ],
-    "note": "The permission cards and control hub show a service in preparation. They are not functioning privacy controls.",
-    "sources": [
-        {
-            "label": "Khabargaon, 16 Nov",
-            "href": "https://khabargaon.com/technology/what-is-consent-manager-dpdp-act-rules-digital-data-privacy-protection-india/38794"
-        }
-    ]
-},
-{
-    "id": "groups",
-    "headline": "Train bookings for genuine groups",
-    "asOf": "South Western Railway; reports 19-20 Nov 2026",
-    "bullets": [
-        "South Western Railway revised its group-reservation guidance, removing the fixed berth cap for genuine group requests.",
-        "Wedding parties, students, pilgrims, sports teams and cultural groups are among the intended users. Applications go directly to authorised railway officials with the purpose and passenger details.",
-        "This is SWR guidance, not unlimited ordinary IRCTC-account booking or guaranteed confirmed seats. The report says group applications are accepted from 9 AM at major reservation locations."
-    ],
-    "note": "The reservation counter and group are an illustration, not a live booking service.",
-    "sources": [
-        {
-            "label": "The Indian Express, 19 Nov",
-            "href": "https://indianexpress.com/article/india/indian-railways-bulk-ticket-booking-rules-group-reservations-berth-cap-10969825/"
-        },
-        {
-            "label": "Lallantop, 20 Nov",
-            "href": "https://www.thelallantop.com/technology/post/railways-changes-bulk-ticket-booking-rules-removes-cap-on-berths-for-group-reservations"
-        }
-    ]
-},
-{
-    "id": "fog",
-    "headline": "Winter trains: check before booking",
-    "asOf": "Khabargaon page dated 19 Nov 2026; future service changes",
-    "bullets": [
-        "A reported Ambala railway advisory lists cancellations and partial operation of selected Northern Railway trains during the winter fog period.",
-        "The changes start in December 2026 and run into February or early March 2027, depending on the train.",
-        "Not every route is affected. Check the latest official train status before planning travel; the article points passengers to railway information channels and helpline 139."
-    ],
-    "note": "The misty station and changed timetable illustrate announced winter changes. They do not show current live train status.",
-    "sources": [
-        {
-            "label": "Khabargaon, 19 Nov",
-            "href": "https://khabargaon.com/state/in-view-of-the-fog-the-railways-has-cancelled-several-trains-till-march/38972"
-        }
-    ]
-},
-{
-    "id": "flights",
-    "headline": "SpiceJet disruption draws a notice",
-    "asOf": "Reported 20 Nov 2026; DGCA notice issued 17 Nov",
-    "bullets": [
-        "The Indian Express reports repeated cancellations and delays across SpiceJet operations, affecting passengers beyond a single flight.",
-        "DGCA issued a show-cause notice concerning operational disruption and regulatory issues. The report says the airline had seven days to respond.",
-        "A notice is not a suspension order or a final finding on every concern. Not all flights are cancelled. Check the status of a specific journey; this page has no live flight feed."
-    ],
-    "note": "The airport board is an illustration of disruption, not a real departure board. No crash or invented safety incident is depicted.",
-    "sources": [
-        {
-            "label": "The Indian Express, 20 Nov",
-            "href": "https://indianexpress.com/article/business/aviation/spicejet-dgca-notice-flight-disruptions-regulatory-lapses-10971353/"
-        }
-    ]
-},
-{
-    "id": "homestay",
-    "headline": "Village stays, village livelihoods",
-    "asOf": "DW Hindi feature, 16 Nov 2026",
-    "bullets": [
-        "DW reports on people returning to Uttarakhand villages and building homestay businesses.",
-        "The feature examines how locally run tourism can support jobs, food suppliers and other village businesses.",
-        "This is a livelihoods feature with operators and guests, not a newly launched entitlement or a promise of earnings. Returns, costs and eligibility for support vary."
-    ],
-    "note": "The hillside homes, visitors and local work are an illustration, not a named property or accommodation recommendation.",
-    "sources": [
-        {
-            "label": "DW Hindi, 16 Nov",
-            "href": "https://www.dw.com/hi/homestays-spark-reverse-migration-and-revive-uttarakhands-villages/a-79960577"
-        }
-    ]
-},
-{
-    "id": "cancercost",
-    "headline": "The family cost of cancer care",
-    "asOf": "Khabargaon field report, 20 Nov 2026",
-    "bullets": [
-        "The report examines the financial pressure cancer treatment can put on families.",
-        "Interviews describe costs stretching beyond earnings, debt and pressure to sell assets. Assistance can help, but substantial out-of-pocket costs can remain.",
-        "This is reporting on a wider affordability problem, not a new benefit announcement, universal treatment price or medical advice."
-    ],
-    "note": "The supportive family, household budget and medical bills are illustrative. They are not portraits of the patients in the report.",
-    "sources": [
-        {
-            "label": "Khabargaon, 20 Nov",
-            "href": "https://khabargaon.com/national/expensive-treatment-bigger-fear-than-death-families-crushed-by-cancer/39057"
-        }
-    ]
-},
-{
-    "id": "air",
-    "headline": "Indoor air: plants and filters have limits",
-    "asOf": "BBC Hindi explainer, 20 Nov 2026",
-    "bullets": [
-        "Indoor pollution can come from outdoor air entering a home and from indoor sources such as smoke, materials and household activities.",
-        "The BBC feature distinguishes particle filtration from the removal of gaseous pollutants.",
-        "Plants and purifiers are not a complete solution. A few houseplants should not be taken as evidence that a polluted room is safe. This is an explainer, not a product recommendation or a quantified health-protection claim."
-    ],
-    "note": "The room, filter and plants illustrate different factors. Pollution is not shown disappearing around the plants.",
-    "sources": [
-        {
-            "label": "BBC Hindi, 20 Nov",
-            "href": "https://www.bbc.com/hindi/articles/crvg28q5g3yjo"
-        }
-    ]
-},
-{
-    "id": "parenting",
-    "headline": "Why children lie, and encouraging honesty",
-    "asOf": "BBC Hindi parenting explainer, 20 Nov 2026",
-    "bullets": [
-        "The feature explains how learning to hide information can be part of a child developing an understanding of other minds.",
-        "It discusses why children experiment with untruths and how parents can encourage honesty.",
-        "This does not mean every lie is healthy or harmful behaviour should be ignored. It is a parenting feature, not a diagnosis or a fixed developmental milestone."
-    ],
-    "note": "A calm conversation about missing cookies is a playful illustration, not a real family or an instruction to punish or shame children.",
-    "sources": [
-        {
-            "label": "BBC Hindi, 20 Nov",
-            "href": "https://www.bbc.com/hindi/articles/cqpv94yyn9j1o"
-        }
-    ]
-},
+    {
+        id: 'puc',
+        headline: 'PUC valid for 3 years for newer BS-VI cars',
+        asOf: 'Reports 19-20 Nov 2026; start date not verified',
+        bullets: [
+            'MoRTH announced revised PUC validity periods based on vehicle age and emission standard. The published schedule gives private BS-VI vehicles up to six years old a three-year interval, and commercial BS-VI vehicles of that age two years.',
+            'The schedule lists six months for BS-IV and three months for BS-I, II and III. Older BS-VI categories have shorter intervals.',
+            'This does not automatically extend an existing certificate. The new period applies at the first renewal after the amendment takes effect. The PIB release mixes amended and proposed wording and does not establish its commencement date. Check current requirements before delaying a renewal.',
+        ],
+        note: 'The testing bay and certificate are an illustration of announced changes, not a live certificate checker. The start date is not verified.',
+        sources: [
+            {
+                label: 'The Indian Express, updated 20 Nov',
+                href: 'https://indianexpress.com/article/india/puc-certificate-validity-rules-2026-bs-6-10969816/',
+            },
+            {
+                label: 'PIB, 19 Nov',
+                href: 'https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2338468',
+            },
+        ],
+    },
+    {
+        id: 'fog',
+        headline: 'Winter fog: 20 trains cancelled',
+        asOf: 'Ambala Division notification, 18-19 Nov 2026',
+        bullets: [
+            'Northern Railway\u2019s Ambala Division notified 20 trains cancelled and 2 curtailed between December 2026 and February 2027 for the fog season.',
+            'Amritsar-Chandigarh and Firozpur-Chandigarh are cancelled daily; the Dibrugarh-Chandigarh Express on 25 specified days; Kathgodam-Jammu Tawi, Rishikesh-Jammu Tawi and Katra-Kalka on specified weekdays; two Delhi-Jalandhar services are curtailed to Ambala.',
+            'This covers selected north India routes, not the whole network. A separate advisory suspends Jammu Tawi-Kathgodam weekly trains from 12 January to 2 March 2027.',
+            'Check your train before travelling: the RailOne app, the railway website or helpline 139.',
+        ],
+        note: 'The misty platform and the partly cancelled board illustrate announced winter changes. They do not show current live train status.',
+        sources: [
+            {
+                label: 'The Times of India: fog-season cancellations, 18 Nov 2026',
+                href: 'https://timesofindia.indiatimes.com/city/chandigarh/fog-ahead-railways-cancel-chandigarh-to-amritsar-ferozepur-and-dibrugarh-trains/articleshow/135970676.cms',
+            },
+            {
+                label: 'ThePrint (PTI): Jammu-Kathgodam trains suspended, 17 Nov 2026',
+                href: 'https://theprint.in/india/northern-railway-cancels-jammu-kathgodam-trains-for-one-and-a-half-months-during-foggy-season/3101336/',
+            },
+        ],
+    },
+    {
+        id: 'flights',
+        headline: 'SpiceJet faces widespread cancellations',
+        asOf: 'Reported 20 Nov 2026; DGCA notice issued 17 Nov',
+        bullets: [
+            'The Indian Express reports repeated cancellations and delays across SpiceJet operations, affecting passengers beyond a single flight.',
+            'DGCA issued a show-cause notice concerning operational disruption and regulatory issues, seeking an explanation. The report says the airline had seven days to respond.',
+            'A notice is not a suspension order or a final finding. Not all flights are cancelled. Check the status of your flight before leaving; this page has no live flight feed.',
+        ],
+        note: 'The branded counter and the parked SpiceJet aircraft are an illustration of disruption, not a real departure board. No crash or invented safety incident is depicted, and the airline is not shown as shut down.',
+        sources: [{
+            label: 'The Indian Express, 20 Nov',
+            href: 'https://indianexpress.com/article/business/aviation/spicejet-dgca-notice-flight-disruptions-regulatory-lapses-10971353/',
+        }],
+    },
+    {
+        id: 'homestay',
+        headline: 'Homestays draw Uttarakhand locals home',
+        asOf: 'Reports 16-19 Nov 2026',
+        bullets: [
+            'Features report people returning to Uttarakhand villages to run homestays, and tourism creating work in their villages.',
+            'NewsNation reports over 5,000 homestay units operational in the state and about 6,500 migrants having returned.',
+            'This is a livelihoods feature, not a newly launched scheme or a promise of earnings. Returns, costs and eligibility for support vary.',
+        ],
+        note: 'The lived-in hillside homes, the host and the visitors are an illustration, not a named property or a stay recommendation.',
+        sources: [
+            {
+                label: 'NewsNation: homestays in Uttarakhand villages',
+                href: 'https://www.newsnationtv.com/states/uttarakhand/homestays-emerging-as-new-source-of-employment-in-uttarakhand-villages-over-5000-units-operational-6500-migrants-returned-12562878',
+            },
+            {
+                label: 'DW Hindi, 16 Nov',
+                href: 'https://www.dw.com/hi/homestays-spark-reverse-migration-and-revive-uttarakhands-villages/a-79960577',
+            },
+        ],
+    },
+    {
+        id: 'cancercost',
+        headline: 'Cancer costs beyond insurance',
+        asOf: 'Indian Express on a Plum DataLabs analysis, 13 Nov 2026',
+        bullets: [
+            'Plum DataLabs analysed 8,102 cancer insurance claims raised by its users over four years, across multiple insurers. This is an employer-insurance claims pool, not a nationally representative sample.',
+            'The total cost of care in these claims was ₹78 crore. Patients paid ₹23.2 crore themselves, about 30%, while the overall insurance payout ratio was 70.8%.',
+            'More than one in five patients faced treatment costs over ₹5 lakh. Intensive treatment had a median cost of ₹7.6 lakh, against about ₹1 lakh for less intensive care.',
+            'Deductions from cancer-related claims rose 58% in three years. Reasons include newer drugs treated as off-label in India, oral chemotherapy capped at 50% by some policies, waiting periods, room-rent limits and co-pays.',
+        ],
+        note: 'The billing desk, the family and the cost-split bar are an illustration of this one analysis, not portraits of real patients.',
+        sources: [{
+            label: 'The Indian Express: Plum analysis of 8,102 claims, 13 Nov 2026',
+            href: 'https://indianexpress.com/article/health-wellness/ealth-insurance-cancer-treatment-out-of-pocket-cost-claim-deductions-plum-report-10961436/',
+        }],
+    },
+    {
+        id: 'air',
+        headline: 'Plants can\u2019t replace an air purifier',
+        asOf: 'BBC Hindi explainer, 20 Nov 2026',
+        bullets: [
+            'HEPA filters trap fine particles (PM2.5 and PM10), including those in smoke and cooking fumes, and can substantially reduce particulate pollution in a closed room. They do not effectively remove gaseous pollutants.',
+            'Houseplants absorb some gases such as benzene and formaldehyde, but only modestly. A few plants do not make a polluted room safe.',
+            'Cut indoor sources too: incense and dhoop, mosquito coils, cooking fumes, and fumes from paints and furniture glue. Ventilate when the outdoor air improves.',
+        ],
+        note: 'The room, purifier and plants illustrate different factors. Particles are shown collecting at the filter, not disappearing around the plants.',
+        sources: [
+            {
+                label: 'BBC Hindi, 20 Nov',
+                href: 'https://www.bbc.com/hindi/articles/crvg28q5g3yjo',
+            },
+            {
+                label: 'Hindustan Times: choosing an air purifier, 15 Nov',
+                href: 'https://www.hindustantimes.com/lifestyle/health/air-purifiers-and-winter-pollution-doctor-shares-how-to-choose-one-from-room-size-to-filter-type-101794724850366.html',
+            },
+        ],
+    },
+    {
+        id: 'antibiotic',
+        headline: 'Common infections are harder to treat',
+        asOf: 'ICMR AMR surveillance report 2025; Indian Express explainer, 20 Nov',
+        bullets: [
+            'ICMR\u2019s surveillance network finds common bacteria behind pneumonia, urinary tract and bloodstream infections, including E. coli and Klebsiella pneumoniae, increasingly not responding to antibiotics doctors have used for years. These are network surveillance findings, not universal rates.',
+            'This year\u2019s report adds data from 34 secondary-care hospitals for the first time. Resistance to third-generation cephalosporins is very high even in smaller hospitals; resistance to carbapenems, the last-resort class, remains mostly a large-hospital problem.',
+            'The drivers, per the ICMR scientist: antibiotics prescribed or taken for illnesses that do not need them, poor infection prevention, and antibiotic use in animal farming.',
+            'The advice: don\u2019t self-medicate with antibiotics. Take them only when needed, exactly as prescribed.',
+        ],
+        note: 'The pharmacy counter and the prescription are an illustration. The diagram shows bacteria surviving an antibiotic; no medicines are shown as banned.',
+        sources: [
+            {
+                label: 'The Indian Express: ICMR antibiotic resistance report, 20 Nov 2026',
+                href: 'https://indianexpress.com/article/explained/explained-health/icmr-antibiotic-resistance-report-2025-common-infections-india-10967863/',
+            },
+            {
+                label: 'ICMR reports index (AMRSN 2025)',
+                href: 'https://www.icmr.gov.in/reports',
+            },
+        ],
+    },
+    {
+        id: 'signal',
+        headline: 'Signal adds screenshot protection',
+        asOf: 'Signal blog, 20 Nov 2026',
+        bullets: [
+            'Signal is blocking screenshots inside its own app on iOS 27, and on Android versions where it can detect an AI assistant attempting to read the Signal screen.',
+            'The aim is to limit OS-level AI agents, Apple\u2019s Siri AI and Google\u2019s Gemini, from reading chats. It is not a phone-wide screenshot ban.',
+            'Users can switch the protection off in Signal\u2019s settings. Signal warns that doing so exposes chats to those agents.',
+            'The protection is not available on macOS, and Signal concedes it is incomplete: filesystem-level access is not covered.',
+        ],
+        note: 'The shield protects only the Signal app, and the opt-out switch in the scene is real: the setting exists. The phone and the robot are an illustration.',
+        sources: [{
+            label: 'Signal blog: Protecting your privacy, 20 Nov 2026',
+            href: 'https://signal.org/blog/protecting-your-privacy/',
+        }],
+    },
+    {
+        id: 'voyager',
+        headline: 'Voyager 1 is one light-day from Earth',
+        asOf: 'NASA; milestone reached 18 Nov 2026',
+        bullets: [
+            'On 18 November 2026 Voyager 1 reached one light-day from Earth: about 25.9 billion km (16.1 billion miles), the distance light travels in 24 hours. No human-made object has gone farther.',
+            'Its radio signal now takes 24 hours to reach us, one way.',
+            'Scale anchors from NASA: sunlight takes 1.3 seconds to reach the Moon and about 4 hours to reach Neptune, and 20 hours more to reach Voyager 1.',
+            'Since 14 November the probe has been sending only a carrier signal while engineers analyse a data issue; the milestone was confirmed through that signal plus its trajectory. Launched in 1977, it carries the Golden Record.',
+        ],
+        note: 'The probe, the tiny Earth and the dotted signal path illustrate the distance; the layout is not to scale.',
+        sources: [{
+            label: 'NASA: Voyager 1 reaches one light-day from Earth, 19 Nov 2026',
+            href: 'https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/',
+        }],
+    },
+    {
+        id: 'travel',
+        headline: 'Travel insurance pays most for medical bills',
+        asOf: 'Indian Express explainer, 20 Nov 2026; Asego analysis',
+        bullets: [
+            'Asego analysed about 11,000 travel claims from April to November. This is one provider\u2019s book, not industry-wide data.',
+            'Non-medical claims such as delays, cancellations and baggage are over two-thirds of claims but only about a fifth of payouts, roughly $1.3M of $6.7M.',
+            'Medical claims are about a third of claims but about 80% of payouts ($5.3M): nearly ₹80 of every ₹100 paid out.',
+            'The takeaway: delays are the likely claim, but the medical cover is what protects you from the big bills.',
+        ],
+        note: 'The payout bar shows the share of money paid out in this analysis, not the percentage any policy covers.',
+        sources: [{
+            label: 'The Indian Express: what travel claims pay for, 20 Nov 2026',
+            href: 'https://indianexpress.com/article/explained/flight-delays-travel-claims-medical-bills-10970397/',
+        }],
+    },
+    {
+        id: 'fastag',
+        headline: 'Live within 20 km of a toll?',
+        asOf: 'MoRTH notification, 26 Oct 2026; PIB release',
+        bullets: [
+            'Owners of non-commercial vehicles with a valid FASTag, living within 20 km of a fee plaza, can buy an annual local pass for unlimited trips through that one plaza.',
+            'The pass costs ₹1,500 a year where the plaza is outside municipal or town limits and ₹3,000 within them. The rate follows the plaza\u2019s location and is revised annually.',
+            'It covers one specific plaza and is non-transferable, and is an alternative to the existing monthly pass. It is not available on closed user-fee stretches or where a service or alternative road exists.',
+            'Available at eligible plazas from 1 November 2026. Sales on the Rajmargyatra app start 1 December 2026.',
+        ],
+        note: 'The home, the car and the single marked lane illustrate one eligible plaza, not the whole toll network.',
+        sources: [
+            {
+                label: 'PIB: annual local pass for residents near fee plazas',
+                href: 'https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2329077&lang=1&reg=1',
+            },
+            {
+                label: 'The Indian Express explainer, 28 Oct 2026',
+                href: 'https://indianexpress.com/article/explained/nhai-annual-local-toll-pass-fee-eligibility-rules-10940579/',
+            },
+        ],
+    },
+    {
+        id: 'motor',
+        headline: 'New car/bike policies from 15 December',
+        asOf: 'IRDAI circular IRDAI/NL/CIR/MISC/145/11/2026, 2 Nov 2026',
+        bullets: [
+            'From 15 December 2026, every new private car and two-wheeler policy is issued in four separate sections: third-party liability (mandatory), legal liability to occupants and pillion riders (optional), personal accident (mandatory for the owner, optional add-on for occupants), and own damage (optional).',
+            'The standard Section II wording expressly excludes the owner and immediate family, defined in the annexure as parents, spouse and children. Passenger liability cover does not protect your own family.',
+            'Family protection is the optional personal-accident add-on under Section III. Check your personal-accident cover when you buy.',
+            'Buyers tick their choices on a customer option form and must receive a Customer Information Sheet. Existing third-party policyholders can add Section II mid-term with the same insurer.',
+            'This restructures policies and makes the family exclusion explicit in uniform wording; it does not by itself prove every old policy lacked family cover.',
+        ],
+        note: 'The adviser, the family and the two labelled covers are an illustration of the new structure, not a loss of all existing cover.',
+        sources: [
+            {
+                label: 'IRDAI: circular and uniform wordings (document 9987995)',
+                href: 'https://irdai.gov.in/en/document-detail?documentId=9987995',
+            },
+            {
+                label: 'Mint: motor insurance rules from December 15',
+                href: 'https://www.livemint.com/money/personal-finance/motor-insurance-rules-from-december-15-your-car-policy-may-not-cover-your-spouse-children-or-parents-11794850544270.html',
+            },
+        ],
+    },
 ];

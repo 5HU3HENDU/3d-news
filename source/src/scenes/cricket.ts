@@ -127,18 +127,10 @@ export function buildCricket(ctx: Ctx, at: { x: number; z: number }) {
     roundRect(c, 8, 8, w - 16, h - 16, 40);
     c.fillStyle = '#10241a'; c.fill();
     c.lineWidth = 10; c.strokeStyle = '#e9d9a6'; c.stroke();
-    fitText(c, 'INDIA  vs  NEW ZEALAND', w / 2, 78, w - 80, 80, 900, '#ffffff');
-    fitText(c, '1st Test, Day 2 stumps  |  Basin Reserve, Wellington', w / 2, 142, w - 80, 38, 700, '#bfe8c9');
-    c.fillStyle = 'rgba(255,255,255,.2)'; c.fillRect(60, 175, w - 120, 3);
-    // rows
-    c.textBaseline = 'middle';
-    c.font = `900 80px ${FONT}`;
-    c.textAlign = 'left'; c.fillStyle = '#e8e8ea'; c.fillText('NZ', 70, 245);
-    c.textAlign = 'right'; c.fillStyle = '#ffd24a'; c.fillText(`${CRICKET.nz} all out`, w - 70, 245);
-    c.textAlign = 'left'; c.fillStyle = '#6fa8ff'; c.fillText('IND', 70, 345);
-    c.textAlign = 'right'; c.fillStyle = '#ffd24a'; c.fillText(CRICKET.ind, w - 70, 345);
-    fitText(c, `India trail by ${CRICKET.trail} runs`, w / 2, 418, w - 100, 40, 800, '#ffffff');
-    fitText(c, 'Jaiswal 85  |  Rahul 52*  |  Padikkal 16*', w / 2, 466, w - 100, 32, 700, '#bfe8c9');
+    fitText(c, 'India reply strongly in Wellington', w / 2, 96, w - 70, 78, 900, '#ffffff');
+    c.fillStyle = 'rgba(255,255,255,.2)'; c.fillRect(60, 168, w - 120, 3);
+    fitText(c, 'Day 2 stumps: NZ 368 · India 159/1', w / 2, 268, w - 70, 64, 800, '#ffd24a');
+    fitText(c, 'Jaiswal 85 · Rahul 52 not out', w / 2, 396, w - 70, 58, 800, '#bfe8c9');
   });
   {
     const g = new GeoBuilder();

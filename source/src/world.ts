@@ -13,7 +13,6 @@ import { buildCricket } from './scenes/cricket';
 import { buildMarket } from './scenes/market';
 import { buildEpfo } from './scenes/epfo';
 import { buildCheetah } from './scenes/cheetah';
-import { buildInsurance } from './scenes/insurance';
 import { buildService } from './scenes/service';
 import { buildNewStory } from './scenes/newStories';
 
@@ -72,20 +71,22 @@ export const SPOTS: Record<SceneId, { x: number; z: number }> = {
   market: { x: -15, z: 11 },
   epfo: { x: -40, z: 14 },
   cheetah: { x: 6, z: -42 },
-  insurance: { x: 45, z: -3 },
+  fastag: { x: 45, z: -3 },
   service: { x: -5, z: 44 },
-  puc: { x: 75.36, z: 9.33 },
-  access: { x: 55.18, z: 49.51 },
-  consent: { x: 13.92, z: 70.78 },
-  groups: { x: -32.66, z: 65.01 },
-  fog: { x: -66.76, z: 34.41 },
-  flights: { x: -75.36, z: -9.33 },
-  homestay: { x: -55.18, z: -49.51 },
-  cancercost: { x: -13.92, z: -70.78 },
-  air: { x: 32.66, z: -65.01 },
-  parenting: { x: 66.76, z: -34.41 },
+  // eleven stories share the outer ring, evenly spaced
+  puc: { x: 75.3, z: 8.8 },
+  antibiotic: { x: 58.4, z: 46.2 },
+  signal: { x: 22.9, z: 68.9 },
+  voyager: { x: -19.9, z: 69.8 },
+  fog: { x: -56.4, z: 48.5 },
+  flights: { x: -74.9, z: 11.9 },
+  homestay: { x: -69.7, z: -28.8 },
+  cancercost: { x: -42.4, z: -59.9 },
+  travel: { x: -1.4, z: -72.3 },
+  air: { x: 39.6, z: -61.6 },
+  motor: { x: 68.3, z: -31.5 },
 };
-export const TOUR: SceneId[] = ['gta', 'cyclone', 'cricket', 'market', 'epfo', 'cheetah', 'insurance', 'service', 'puc', 'access', 'consent', 'groups', 'fog', 'flights', 'homestay', 'cancercost', 'air', 'parenting'];
+export const TOUR: SceneId[] = ['gta', 'cyclone', 'cricket', 'market', 'epfo', 'cheetah', 'service', 'fastag', 'puc', 'antibiotic', 'signal', 'voyager', 'fog', 'flights', 'homestay', 'cancercost', 'travel', 'air', 'motor'];
 // Tap target half-extents per scene (x, z).
 const PICK_BOX: Record<SceneId, { rx: number; rz: number }> = {
   gta: { rx: 7, rz: 6.5 },
@@ -94,18 +95,19 @@ const PICK_BOX: Record<SceneId, { rx: number; rz: number }> = {
   market: { rx: 7, rz: 7.5 },
   epfo: { rx: 6.5, rz: 6.5 },
   cheetah: { rx: 6.5, rz: 6.5 },
-  insurance: { rx: 6.5, rz: 6.5 },
+  fastag: { rx: 6.5, rz: 6.5 },
   service: { rx: 6.5, rz: 6.5 },
   puc: { rx: 6.5, rz: 6.5 },
-  access: { rx: 6.5, rz: 6.5 },
-  consent: { rx: 6.5, rz: 6.5 },
-  groups: { rx: 6.5, rz: 6.5 },
+  antibiotic: { rx: 6.5, rz: 6.5 },
+  signal: { rx: 6.5, rz: 6.5 },
+  voyager: { rx: 6.5, rz: 6.5 },
   fog: { rx: 6.5, rz: 6.5 },
-  flights: { rx: 6.5, rz: 6.5 },
+  flights: { rx: 7.5, rz: 6.5 },
   homestay: { rx: 6.5, rz: 6.5 },
   cancercost: { rx: 6.5, rz: 6.5 },
+  travel: { rx: 6.5, rz: 6.5 },
   air: { rx: 6.5, rz: 6.5 },
-  parenting: { rx: 6.5, rz: 6.5 },
+  motor: { rx: 6.5, rz: 6.5 },
 };
 // The meadow is scaled up from the original four-scene island to make room for eight scenes.
 const ISL = 2.6;
@@ -538,18 +540,19 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   buildMarket(ctx, SPOTS.market);
   buildEpfo(ctx, SPOTS.epfo);
   buildCheetah(ctx, SPOTS.cheetah);
-  buildInsurance(ctx, SPOTS.insurance);
   buildService(ctx, SPOTS.service);
+  buildNewStory(ctx, SPOTS.fastag, 'fastag');
   buildNewStory(ctx, SPOTS.puc, 'puc');
-  buildNewStory(ctx, SPOTS.access, 'access');
-  buildNewStory(ctx, SPOTS.consent, 'consent');
-  buildNewStory(ctx, SPOTS.groups, 'groups');
+  buildNewStory(ctx, SPOTS.antibiotic, 'antibiotic');
+  buildNewStory(ctx, SPOTS.signal, 'signal');
+  buildNewStory(ctx, SPOTS.voyager, 'voyager');
   buildNewStory(ctx, SPOTS.fog, 'fog');
   buildNewStory(ctx, SPOTS.flights, 'flights');
   buildNewStory(ctx, SPOTS.homestay, 'homestay');
   buildNewStory(ctx, SPOTS.cancercost, 'cancercost');
+  buildNewStory(ctx, SPOTS.travel, 'travel');
   buildNewStory(ctx, SPOTS.air, 'air');
-  buildNewStory(ctx, SPOTS.parenting, 'parenting');
+  buildNewStory(ctx, SPOTS.motor, 'motor');
 
   // ---------- per-frame model matrix ----------
   function modelFor(o: Obj, t: number): M4 {
@@ -651,7 +654,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   let phase: Phase = dwellParams(0);
   let pendingDwell: Dwell | null = null;
   let phaseInit = false;
-
+  
   function startTravel(now: number, next: SceneId) {
     const c = close(next);
     const d = dwellParams(0);

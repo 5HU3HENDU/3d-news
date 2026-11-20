@@ -28,6 +28,34 @@ export function banner(
   ctx.addDecal({ tex, model: T(at.x, Y + 4.9, at.z - back + 0.05), w: 7.6, h: 1.9, billboard: true });
 }
 
+// A taller, clearer headline board carrying two or three approved lines. Each line gets
+// its own row; the title is largest and every line is shrunk only until it fits the width.
+// Textures are oversized relative to the board so the words stay crisp on phone screens.
+export function bannerEx(
+  ctx: Ctx, at: { x: number; z: number }, Y: number, lines: string[],
+  c0: string, c1: string, edge: string, subCol: string, back = 5.1,
+) {
+  const rows = lines.length;
+  const tex = ctx.makeTex(1024, 128 + rows * 118, (c, w, h) => {
+    roundRect(c, 6, 6, w - 12, h - 12, 40);
+    const g = c.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, c0); g.addColorStop(1, c1);
+    c.fillStyle = g; c.fill();
+    c.lineWidth = 10; c.strokeStyle = edge; c.stroke();
+    const top = 74, step = (h - top - 46) / (rows - 1 || 1);
+    lines.forEach((ln, i) => {
+      const isTitle = i === 0;
+      fitText(c, ln, w / 2, rows === 1 ? h / 2 : top + step * i, w - 90, isTitle ? 96 : 60, isTitle ? 900 : 800, isTitle ? '#ffffff' : subCol);
+    });
+  });
+  const W = 8.2, H = W * (128 + rows * 118) / 1024;
+  const g = new GeoBuilder();
+  g.cyl(0.08, 0.08, 4.6, 8, [0.4, 0.4, 0.44], T(at.x - 3.6, Y, at.z - back));
+  g.cyl(0.08, 0.08, 4.6, 8, [0.4, 0.4, 0.44], T(at.x + 3.6, Y, at.z - back));
+  ctx.addObj(g, IDENT);
+  ctx.addDecal({ tex, model: T(at.x, Y + 4.3 + H / 2, at.z - back + 0.05), w: W, h: H, billboard: true, glow: 0.12 });
+}
+
 // A small person at the origin, facing +z, for the 'walk' animation or a gentle bob.
 export function personGeo(skin: V3, shirt: V3, opts: { hair?: V3; tray?: boolean; paper?: boolean; grey?: boolean; scale?: number } = {}) {
   const g = new GeoBuilder();
