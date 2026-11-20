@@ -434,9 +434,11 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     ctx.addObj(rocks, I);
     { // pond
       const g = new GeoBuilder();
-      g.disc(2.4, 26, [0.45, 0.72, 0.85], T(0.5, TOP + 0.02, -2));
-      g.disc(1.9, 26, [0.35, 0.62, 0.78], T(0.5, TOP + 0.035, -2));
-      ctx.addObj(g, I, { wave: 0.02 });
+      // stacked well apart: the wave must never let the two discs (or the grass
+      // top) reach the same depth, or they z-fight on 16-bit phone depth buffers
+      g.disc(2.4, 26, [0.45, 0.72, 0.85], T(0.5, TOP + 0.06, -2));
+      g.disc(1.9, 26, [0.35, 0.62, 0.78], T(0.5, TOP + 0.12, -2));
+      ctx.addObj(g, I, { wave: 0.012 });
     }
     // two round trees
     for (const [x, z, s] of [[3.5, 16.5, 1.0], [-5, -18.5, 1.2]] as [number, number, number][]) {
@@ -525,9 +527,30 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       d0: rnd(18.5, 21), d1: rnd(20, 23),
     };
   }
-  function pickNext(exclude: SceneId): SceneId {
-    const others = TOUR.filter((s) => s !== exclude);
-    return others[Math.floor(Math.random() * others.length)];
+  // shuffled rounds: visit every story once in random order, reshuffle, repeat.
+  // The last story of a round never opens the next round either.
+  const shuffle = (arr: SceneId[]): SceneId[] => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+  let bag: SceneId[] = shuffle(TOUR.filter((s) => s !== cur)); // cur counts as visited this round
+  function nextStory(exclude: SceneId): SceneId {
+    if (bag.length === 0) {
+      bag = shuffle(TOUR.slice());
+      if (bag.length > 1 && bag[0] === exclude) {
+        const k = 1 + Math.floor(Math.random() * (bag.length - 1));
+        [bag[0], bag[k]] = [bag[k], bag[0]];
+      }
+    }
+    // never travel to the story the camera is already at (possible after user panning)
+    if (bag.length > 1 && bag[0] === exclude) {
+      const k = 1 + Math.floor(Math.random() * (bag.length - 1));
+      [bag[0], bag[k]] = [bag[k], bag[0]];
+    }
+    return bag.shift()!;
   }
   let phase: Phase = dwellParams(0);
   let pendingDwell: Dwell | null = null;
@@ -562,7 +585,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
         tPolar = mix(d.po0, d.po1, k);
         tDist = mix(d.d0, d.d1, k) + Math.sin(k * Math.PI) * 1.1;
       }
-      if (u >= 1) startTravel(now, pickNext(cur));
+      if (u >= 1) startTravel(now, nextStory(cur));
       return;
     }
     const k = Math.min(1, u), e = ease(k);
@@ -588,7 +611,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   }
   function resumeFrom(now: number) {
     // after the user lets go: wander to a random story that isn't the nearest one
-    startTravel(now, pickNext(TOUR[nearestIdx()]));
+    startTravel(now, nextStory(TOUR[nearestIdx()]));
   }
   let userActive = false;
   function touched() { lastTouch = performance.now(); userActive = true; }
@@ -732,7 +755,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       ty + useDist * Math.cos(polar),
       tz + useDist * Math.sin(polar) * Math.cos(azim),
     ];
-    curProj = m4perspective(0.72, aspect, 1, 600);
+    curProj = m4perspective(0.72, aspect, 2, 260);
     curView = m4lookAt(eye, [tx, ty, tz], [0, 1, 0]);
     const fogK = useDist / 17;
     const fogNear = 24 * fogK, fogFar = 60 * fogK;
@@ -806,6 +829,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       touched();
     },
     cars: () => carState.map((c) => ({ ...c })),
+    bag: () => ({ cur, remaining: bag.slice() }),
     plane: () => ({ ...planeState }),
   };
 

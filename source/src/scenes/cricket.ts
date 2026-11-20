@@ -10,15 +10,26 @@ export function buildCricket(ctx: Ctx, at: { x: number; z: number }) {
   const Y = patch(ctx, at.x, at.z, [0.74, 0.88, 0.62], [0.5, 0.7, 0.4], 9, 9, 13);
   const X = (x: number, y: number, z: number): M4 => T(at.x + x, Y + y, at.z + z);
   const I = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) as M4;
-  const oval = (r: number, y: number, col: V3, sx = 1.18) => {
+  // outfield mow stripes: concentric rings at ONE height. The old nested discs
+  // sat 0.005 apart and z-fought on 16-bit phone depth buffers ("grass flicker").
+  {
     const g = new GeoBuilder();
-    g.disc(r, 36, col, m4mul(X(0, y, 0.6), m4scale(sx, 1, 1)));
+    const sx = 1.32, y = 0.02, cz = 0.6, seg = 48;
+    const bands: [number, number, V3][] = [
+      [0, 2.7, [0.52, 0.78, 0.42]],
+      [2.7, 3.8, [0.45, 0.72, 0.36]],
+      [3.8, 5.0, [0.52, 0.78, 0.42]],
+      [5.0, 6.2, [0.45, 0.72, 0.36]],
+    ];
+    for (const [r0, r1, col] of bands) {
+      for (let si = 0; si < seg; si++) {
+        const a0 = (si / seg) * Math.PI * 2, a1 = ((si + 1) / seg) * Math.PI * 2;
+        const p = (a: number, r: number): V3 => [at.x + Math.cos(a) * r * sx, Y + y, at.z + cz + Math.sin(a) * r];
+        g.quad(p(a0, r0), p(a1, r0), p(a1, r1), p(a0, r1), col);
+      }
+    }
     ctx.addObj(g, I);
-  };
-  oval(6.2, 0.01, [0.45, 0.72, 0.36], 1.32);
-  oval(5.0, 0.015, [0.52, 0.78, 0.42], 1.32);
-  oval(3.8, 0.02, [0.45, 0.72, 0.36], 1.32);
-  oval(2.7, 0.025, [0.52, 0.78, 0.42], 1.32);
+  }
   {
     const g = new GeoBuilder();
     g.box(7.4, 0.03, 1.15, [0.86, 0.76, 0.52], X(0, 0.04, 0.6));

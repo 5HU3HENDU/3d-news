@@ -24,7 +24,7 @@ export function buildGta(ctx: Ctx, at: { x: number; z: number }) {
   { // rug
     const g = new GeoBuilder();
     g.disc(1.15, 20, C.rug, L(0, 0.16, 2.05));
-    g.disc(0.8, 20, [0.65, 0.79, 0.83], L(0, 0.165, 2.05));
+    g.disc(0.8, 20, [0.65, 0.79, 0.83], L(0, 0.19, 2.05));
     ctx.addObj(g, I);
   }
   { // TV, stand, glowing screen

@@ -25,10 +25,10 @@ export function buildCyclone(ctx: Ctx, at: { x: number; z: number }) {
   // grass underlay, sand beach, sea with a foam edge
   {
     const g = new GeoBuilder();
-    g.disc(4.6, 30, C.sand, TT(3.0, Y + 0.01, 0.8));
+    g.disc(4.6, 30, C.sand, TT(3.0, Y + 0.04, 0.8));
     ctx.addObj(g, I);
     const f = new GeoBuilder();
-    f.disc(4.5, 30, C.seaFoam, TT(10.0, Y + 0.04, 0.8));
+    f.disc(4.5, 30, C.seaFoam, TT(10.0, Y + 0.08, 0.8));
     ctx.addObj(f, I);
     const s = new GeoBuilder();
     const seg = 24, rings = 5, R = 4.1;
@@ -43,14 +43,14 @@ export function buildCyclone(ctx: Ctx, at: { x: number; z: number }) {
         );
       }
     }
-    ctx.addObj(s, TT(10.0, Y + 0.14, 0.8), { wave: 0.035 });
+    ctx.addObj(s, TT(10.0, Y + 0.14, 0.8), { wave: 0.03 });
   }
   // small puddles of rainwater on low ground (Chief Secretary: low-lying areas filled with rainwater)
   {
     const g = new GeoBuilder();
     const puddles: [number, number, number][] = [[-3.4, -0.3, 0.8], [-2.6, 1.9, 0.55], [-4.1, 2.5, 0.45], [-1.1, -1.6, 0.5], [-3.0, -1.4, 0.4]];
-    for (const [x, z, r] of puddles) g.disc(r, 16, [0.5, 0.74, 0.86], TT(x, Y + 0.02, z));
-    ctx.addObj(g, I, { wave: 0.015 });
+    for (const [x, z, r] of puddles) g.disc(r, 16, [0.5, 0.74, 0.86], TT(x, Y + 0.06, z));
+    ctx.addObj(g, I, { wave: 0.01 });
   }
   // ODISHA block letters, bounced by the wind
   {
