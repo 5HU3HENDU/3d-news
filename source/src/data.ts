@@ -1,0 +1,112 @@
+// Story facts and the market snapshot. Everything shown in the world and in the
+// info panels comes from here, so a fact is changed in exactly one place.
+// Every figure below was read from the linked source on 20 Nov 2026.
+
+export type SceneId = 'gta' | 'cyclone' | 'cricket' | 'market';
+
+export interface Source { label: string; href: string }
+
+export interface Story {
+    id: SceneId;
+    title: string;       // short caption for the tour chip
+    headline: string;    // panel title
+    where: string;
+    asOf: string;
+    bullets: string[];
+    note: string;
+    sources: Source[];
+}
+
+// Market snapshot: Business Standard live blog, "As of 12:00 PM" update and the
+// "As of 11:00 AM" update. Not live. The page does not refresh these numbers.
+export const MARKET = {
+    asOf: '12:00 PM IST',
+    date: 'Fri 20 Nov 2026',
+    sensex: { value: '83,378.42', pct: '+0.43%', points: '+356.67', up: true, earlier: { at: '11:00 AM', value: 83190.82 }, now: 83378.42 },
+    nifty: { value: '25,614.55', pct: '+0.39%', points: '+100.25', up: true, earlier: { at: '11:00 AM', value: 25569.80 }, now: 25614.55 },
+};
+
+export const CRICKET = {
+    nz: '368',
+    ind: '159/1',
+    trail: '209',
+};
+
+export const stories: Story[] = [
+    {
+        id: 'gta',
+        title: 'GTA VI is out',
+        headline: 'Game night: GTA VI is out',
+        where: 'Top left of the canvas: a flat with a glowing TV',
+        asOf: 'Announced Thu 19 Nov 2026',
+        bullets: [
+            'Rockstar Games, a Take-Two label, announced on 19 November 2026 that Grand Theft Auto VI is now available on PlayStation 5 and Xbox Series X|S.',
+            'Only those two consoles are named in the announcement.',
+        ],
+        note: 'The two players and their glowing TV are an illustration, not gameplay footage.',
+        sources: [{
+            label: 'Take-Two Interactive press release, 19 Nov 2026',
+            href: 'https://www.take2games.com/ir/news/rockstar-games-announces-grand-theft-auto-vi-now-available',
+        }],
+    },
+    {
+        id: 'cyclone',
+        title: 'Cyclone Akvan: Odisha landfall',
+        headline: 'Cyclone Akvan crosses the Odisha coast',
+        where: 'Top right of the canvas: the beach at Gopalpur',
+        asOf: 'Fri 20 Nov 2026, report updated 11:02 AM IST',
+        bullets: [
+            'The India Meteorological Department said Akvan crossed the south Odisha and north Andhra Pradesh coast close to Gopalpur between 7:30 and 8:30 AM on 20 November, with winds of 70 to 80 kmph gusting to 90 kmph.',
+            'The Odisha Chief Secretary said no untoward incident was reported. Heavy rain fell in south coastal and coastal districts, and Patrapur in Ganjam recorded the most, 209 mm.',
+            'About 3.72 lakh people were moved to roughly 10,000 shelters beforehand.',
+            'Water: the Chief Secretary said low-lying urban areas were filled with rainwater. The scene shows only small puddles on low ground, and no flooded homes or streets, because none were reported.',
+            'IMD sources said the system would weaken into a deep depression and then a depression during the day.',
+        ],
+        note: 'The swirl is a toy model of the storm at the coast. The wind makes the ODISHA letters jump, and the line of people walking to the shelter is the evacuation. No destruction is depicted.',
+        sources: [{
+            label: 'The Hindu: Cyclone Akvan crosses Odisha coast, 20 Nov 2026',
+            href: 'https://www.thehindu.com/news/national/cyclone-akvan-odisha-andhra-pradesh-landfall-imd-updates/article71722866.ece',
+        }],
+    },
+    {
+        id: 'cricket',
+        title: 'India vs New Zealand, 1st Test',
+        headline: 'Cricket: India reply strongly in Wellington',
+        where: 'Bottom right of the canvas: the Basin Reserve',
+        asOf: 'Day 2 stumps, Fri 20 Nov 2026 (New Zealand time)',
+        bullets: [
+            `New Zealand were all out for ${CRICKET.nz} in the first Test at the Basin Reserve, Wellington. Henry Nicholls finished unbeaten on 175 and Glenn Phillips made 118.`,
+            `India ended day 2 on ${CRICKET.ind}, trailing by ${CRICKET.trail} runs. Yashasvi Jaiswal made 85 from 89 balls, KL Rahul was 52 not out, and Devdutt Padikkal 16 not out.`,
+            'Jasprit Bumrah took four wickets for India.',
+        ],
+        note: 'This is the day 2 stumps score. Play continues on day 3, so the scoreboard in the scene is fixed and does not update.',
+        sources: [
+            {
+                label: 'AP: India ends Day 2 at 159-1 in reply to New Zealand\u2019s 368',
+                href: 'https://apnews.com/article/cricket-new-zealand-india-1st-test-f81df4378452cf7b12066bc243369bdb',
+            },
+            {
+                label: 'Sportstar: Day 2 report, 20 Nov 2026',
+                href: 'https://sportstar.thehindu.com/cricket/india-vs-new-zealand-first-test-day-2-report-scores-runs-wickets-summary/article71723363.ece',
+            },
+        ],
+    },
+    {
+        id: 'market',
+        title: 'Sensex and Nifty, 12:00 PM',
+        headline: 'Markets: Sensex and Nifty at 12:00 PM',
+        where: 'Bottom left of the canvas: the exchange building',
+        asOf: `${MARKET.date}, ${MARKET.asOf}. A snapshot, not live.`,
+        bullets: [
+            `As of 12:00 PM IST the Sensex was up ${MARKET.sensex.points} points (${MARKET.sensex.pct}) at ${MARKET.sensex.value}.`,
+            `The Nifty 50 was up ${MARKET.nifty.points} points (${MARKET.nifty.pct}) at ${MARKET.nifty.value}.`,
+            'The little chart joins the two readings the source gave: 11:00 AM and 12:00 PM. It is not a full intraday chart.',
+            'This is a midday reading while trading was still open. It is not the closing level.',
+        ],
+        note: 'Green means up, red would mean down. The numbers stay fixed at the time shown until the page is updated by hand. Automatic refresh has not been set up.',
+        sources: [{
+            label: 'Business Standard: Stock Market LIVE, 20 Nov 2026',
+            href: 'https://www.business-standard.com/markets/news/stock-market-live-november-20-nse-bse-sensex-today-nifty50-gift-nifty-crude-oil-prices-126112000118_1.html',
+        }],
+    },
+];
