@@ -3,7 +3,7 @@ import { BUILD_AT } from './buildStamp';
 // info panels comes from here, so a fact is changed in exactly one place.
 // Every figure below was read from the linked sources on 20 Nov 2026 (refreshed in the evening).
 
-export type SceneId = 'gta' | 'cyclone' | 'cricket' | 'market' | 'epfo' | 'cheetah' | 'insurance' | 'service';
+export type SceneId = 'gta' | 'cyclone' | 'cricket' | 'market' | 'epfo' | 'cheetah' | 'insurance' | 'service' | 'puc' | 'access' | 'consent' | 'groups' | 'fog' | 'flights' | 'homestay' | 'cancercost' | 'air' | 'parenting';
 
 export interface Source { label: string; href: string }
 
@@ -182,4 +182,186 @@ export const stories: Story[] = [
             href: 'https://www.abplive.com/business/delhi-high-court-service-charge-rule-restaurants-cannot-automatically-add-service-charge-to-bills-3217258',
         }],
     },
+{
+    "id": "puc",
+    "headline": "PUC validity changes announced",
+    "asOf": "Reports 19-20 Nov 2026; commencement date not established",
+    "bullets": [
+        "MoRTH announced revised PUC validity periods based on vehicle age and emission standard. The published schedule gives private BS-VI vehicles up to six years old a three-year interval, and commercial BS-VI vehicles of that age two years.",
+        "The schedule lists six months for BS-IV and three months for BS-I, II and III. Older BS-VI categories have shorter intervals.",
+        "This does not automatically extend an existing certificate. The new period applies at the first renewal after the amendment takes effect. The PIB release mixes amended and proposed wording and does not establish its commencement date. Check current requirements before delaying a renewal."
+    ],
+    "note": "The testing bay and certificate are an illustration of announced changes, not a live certificate checker.",
+    "sources": [
+        {
+            "label": "The Indian Express, updated 20 Nov",
+            "href": "https://indianexpress.com/article/india/puc-certificate-validity-rules-2026-bs-6-10969816/"
+        },
+        {
+            "label": "Lallantop, 20 Nov",
+            "href": "https://www.thelallantop.com/auto/post/puc-certificate-new-rules-bs6-vehicles-bs-1-bs-2-bs-3-india"
+        },
+        {
+            "label": "PIB, 19 Nov",
+            "href": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2338468"
+        }
+    ]
+},
+{
+    "id": "access",
+    "headline": "Verification should not lock people out",
+    "asOf": "Reported 17 Nov; updated 18 Nov 2026",
+    "bullets": [
+        "A Supreme Court application raises barriers that eye-blink and face-authentication prompts create for blind people and others with disabilities.",
+        "The concerns span banking and LPG verification, making this a wider essential-service access issue.",
+        "The court sought responses from the Centre and other respondents. The report gives 16 December as the response deadline. This concerns enforcement of an April 2025 accessibility judgment, not a new accessible process already delivered."
+    ],
+    "note": "A user and a verification counter illustrate the access problem. No new relief or service availability is implied.",
+    "sources": [
+        {
+            "label": "The Indian Express, updated 18 Nov",
+            "href": "https://indianexpress.com/article/legal-news/bank-lpg-apps-demand-eye-blink-for-kyc-locking-out-blind-over-to-sc-10966771/"
+        }
+    ]
+},
+{
+    "id": "consent",
+    "headline": "A future hub for data permissions",
+    "asOf": "Khabargaon report, 16 Nov 2026",
+    "bullets": [
+        "Consent managers are intended to let people view, manage and withdraw permissions they give companies to use personal data.",
+        "The report says a registration portal opened on 14 November for eligible companies seeking to provide this service under the DPDP framework.",
+        "Provider registration is the development being reported. This does not mean a universal consumer dashboard is already available."
+    ],
+    "note": "The permission cards and control hub show a service in preparation. They are not functioning privacy controls.",
+    "sources": [
+        {
+            "label": "Khabargaon, 16 Nov",
+            "href": "https://khabargaon.com/technology/what-is-consent-manager-dpdp-act-rules-digital-data-privacy-protection-india/38794"
+        }
+    ]
+},
+{
+    "id": "groups",
+    "headline": "Train bookings for genuine groups",
+    "asOf": "South Western Railway; reports 19-20 Nov 2026",
+    "bullets": [
+        "South Western Railway revised its group-reservation guidance, removing the fixed berth cap for genuine group requests.",
+        "Wedding parties, students, pilgrims, sports teams and cultural groups are among the intended users. Applications go directly to authorised railway officials with the purpose and passenger details.",
+        "This is SWR guidance, not unlimited ordinary IRCTC-account booking or guaranteed confirmed seats. The report says group applications are accepted from 9 AM at major reservation locations."
+    ],
+    "note": "The reservation counter and group are an illustration, not a live booking service.",
+    "sources": [
+        {
+            "label": "The Indian Express, 19 Nov",
+            "href": "https://indianexpress.com/article/india/indian-railways-bulk-ticket-booking-rules-group-reservations-berth-cap-10969825/"
+        },
+        {
+            "label": "Lallantop, 20 Nov",
+            "href": "https://www.thelallantop.com/technology/post/railways-changes-bulk-ticket-booking-rules-removes-cap-on-berths-for-group-reservations"
+        }
+    ]
+},
+{
+    "id": "fog",
+    "headline": "Winter trains: check before booking",
+    "asOf": "Khabargaon page dated 19 Nov 2026; future service changes",
+    "bullets": [
+        "A reported Ambala railway advisory lists cancellations and partial operation of selected Northern Railway trains during the winter fog period.",
+        "The changes start in December 2026 and run into February or early March 2027, depending on the train.",
+        "Not every route is affected. Check the latest official train status before planning travel; the article points passengers to railway information channels and helpline 139."
+    ],
+    "note": "The misty station and changed timetable illustrate announced winter changes. They do not show current live train status.",
+    "sources": [
+        {
+            "label": "Khabargaon, 19 Nov",
+            "href": "https://khabargaon.com/state/in-view-of-the-fog-the-railways-has-cancelled-several-trains-till-march/38972"
+        }
+    ]
+},
+{
+    "id": "flights",
+    "headline": "SpiceJet disruption draws a notice",
+    "asOf": "Reported 20 Nov 2026; DGCA notice issued 17 Nov",
+    "bullets": [
+        "The Indian Express reports repeated cancellations and delays across SpiceJet operations, affecting passengers beyond a single flight.",
+        "DGCA issued a show-cause notice concerning operational disruption and regulatory issues. The report says the airline had seven days to respond.",
+        "A notice is not a suspension order or a final finding on every concern. Not all flights are cancelled. Check the status of a specific journey; this page has no live flight feed."
+    ],
+    "note": "The airport board is an illustration of disruption, not a real departure board. No crash or invented safety incident is depicted.",
+    "sources": [
+        {
+            "label": "The Indian Express, 20 Nov",
+            "href": "https://indianexpress.com/article/business/aviation/spicejet-dgca-notice-flight-disruptions-regulatory-lapses-10971353/"
+        }
+    ]
+},
+{
+    "id": "homestay",
+    "headline": "Village stays, village livelihoods",
+    "asOf": "DW Hindi feature, 16 Nov 2026",
+    "bullets": [
+        "DW reports on people returning to Uttarakhand villages and building homestay businesses.",
+        "The feature examines how locally run tourism can support jobs, food suppliers and other village businesses.",
+        "This is a livelihoods feature with operators and guests, not a newly launched entitlement or a promise of earnings. Returns, costs and eligibility for support vary."
+    ],
+    "note": "The hillside homes, visitors and local work are an illustration, not a named property or accommodation recommendation.",
+    "sources": [
+        {
+            "label": "DW Hindi, 16 Nov",
+            "href": "https://www.dw.com/hi/homestays-spark-reverse-migration-and-revive-uttarakhands-villages/a-79960577"
+        }
+    ]
+},
+{
+    "id": "cancercost",
+    "headline": "The family cost of cancer care",
+    "asOf": "Khabargaon field report, 20 Nov 2026",
+    "bullets": [
+        "The report examines the financial pressure cancer treatment can put on families.",
+        "Interviews describe costs stretching beyond earnings, debt and pressure to sell assets. Assistance can help, but substantial out-of-pocket costs can remain.",
+        "This is reporting on a wider affordability problem, not a new benefit announcement, universal treatment price or medical advice."
+    ],
+    "note": "The supportive family, household budget and medical bills are illustrative. They are not portraits of the patients in the report.",
+    "sources": [
+        {
+            "label": "Khabargaon, 20 Nov",
+            "href": "https://khabargaon.com/national/expensive-treatment-bigger-fear-than-death-families-crushed-by-cancer/39057"
+        }
+    ]
+},
+{
+    "id": "air",
+    "headline": "Indoor air: plants and filters have limits",
+    "asOf": "BBC Hindi explainer, 20 Nov 2026",
+    "bullets": [
+        "Indoor pollution can come from outdoor air entering a home and from indoor sources such as smoke, materials and household activities.",
+        "The BBC feature distinguishes particle filtration from the removal of gaseous pollutants.",
+        "Plants and purifiers are not a complete solution. A few houseplants should not be taken as evidence that a polluted room is safe. This is an explainer, not a product recommendation or a quantified health-protection claim."
+    ],
+    "note": "The room, filter and plants illustrate different factors. Pollution is not shown disappearing around the plants.",
+    "sources": [
+        {
+            "label": "BBC Hindi, 20 Nov",
+            "href": "https://www.bbc.com/hindi/articles/crvg28q5g3yjo"
+        }
+    ]
+},
+{
+    "id": "parenting",
+    "headline": "Why children lie, and encouraging honesty",
+    "asOf": "BBC Hindi parenting explainer, 20 Nov 2026",
+    "bullets": [
+        "The feature explains how learning to hide information can be part of a child developing an understanding of other minds.",
+        "It discusses why children experiment with untruths and how parents can encourage honesty.",
+        "This does not mean every lie is healthy or harmful behaviour should be ignored. It is a parenting feature, not a diagnosis or a fixed developmental milestone."
+    ],
+    "note": "A calm conversation about missing cookies is a playful illustration, not a real family or an instruction to punish or shame children.",
+    "sources": [
+        {
+            "label": "BBC Hindi, 20 Nov",
+            "href": "https://www.bbc.com/hindi/articles/cqpv94yyn9j1o"
+        }
+    ]
+},
 ];

@@ -1,8 +1,7 @@
 # 3d-news
-News stories as a tiny interactive 3D world
 
-Eight stories from 20 Nov 2026 (GTA VI, Cyclone Akvan in Odisha, India vs New Zealand cricket, Sensex and Nifty, EPFO withdrawal changes, Kuno cheetah cubs, health-insurance claim transparency, restaurant service charge) on one floating meadow with a roaming camera, inner and outer roads with cars, and a plane crossing the sky.
+News stories as a tiny interactive 3D world. Eighteen stories and useful explainers from reports dated 16-20 November 2026, with regional scopes, source links and status caveats in each panel.
 
-- `index.html` is the built page that GitHub Pages serves.
-- `source/` holds the editable project. Build with `cd source && npm install && npx vite build`, then copy `dist/index.html` to the repo root.
-- Story facts and the market snapshot live in `source/src/data.ts`. The numbers are fixed and timestamped, not live.
+The original eight scenes remain. Ten additions cover PUC announcements, accessible verification, data permissions, group train booking, winter trains, flight disruption, rural livelihoods, care costs, indoor air and parenting. The camera lingers 16-19 seconds at each story, then travels for 9 seconds. Shuffled rounds visit all eighteen before repeating.
+
+`index.html` is the production page served by GitHub Pages. `source/` is the editable Vite project. Run `cd source && npm ci && npm run build`, then copy `dist/index.html` to the repository root. Build time is separate from story report dates. No displayed number is a live feed.

@@ -15,6 +15,7 @@ import { buildEpfo } from './scenes/epfo';
 import { buildCheetah } from './scenes/cheetah';
 import { buildInsurance } from './scenes/insurance';
 import { buildService } from './scenes/service';
+import { buildNewStory } from './scenes/newStories';
 
 export type { SceneId };
 export interface WorldHandle {
@@ -73,8 +74,18 @@ export const SPOTS: Record<SceneId, { x: number; z: number }> = {
   cheetah: { x: 6, z: -42 },
   insurance: { x: 45, z: -3 },
   service: { x: -5, z: 44 },
+  puc: { x: 75.36, z: 9.33 },
+  access: { x: 55.18, z: 49.51 },
+  consent: { x: 13.92, z: 70.78 },
+  groups: { x: -32.66, z: 65.01 },
+  fog: { x: -66.76, z: 34.41 },
+  flights: { x: -75.36, z: -9.33 },
+  homestay: { x: -55.18, z: -49.51 },
+  cancercost: { x: -13.92, z: -70.78 },
+  air: { x: 32.66, z: -65.01 },
+  parenting: { x: 66.76, z: -34.41 },
 };
-export const TOUR: SceneId[] = ['gta', 'cyclone', 'cricket', 'market', 'epfo', 'cheetah', 'insurance', 'service'];
+export const TOUR: SceneId[] = ['gta', 'cyclone', 'cricket', 'market', 'epfo', 'cheetah', 'insurance', 'service', 'puc', 'access', 'consent', 'groups', 'fog', 'flights', 'homestay', 'cancercost', 'air', 'parenting'];
 // Tap target half-extents per scene (x, z).
 const PICK_BOX: Record<SceneId, { rx: number; rz: number }> = {
   gta: { rx: 7, rz: 6.5 },
@@ -85,9 +96,19 @@ const PICK_BOX: Record<SceneId, { rx: number; rz: number }> = {
   cheetah: { rx: 6.5, rz: 6.5 },
   insurance: { rx: 6.5, rz: 6.5 },
   service: { rx: 6.5, rz: 6.5 },
+  puc: { rx: 6.5, rz: 6.5 },
+  access: { rx: 6.5, rz: 6.5 },
+  consent: { rx: 6.5, rz: 6.5 },
+  groups: { rx: 6.5, rz: 6.5 },
+  fog: { rx: 6.5, rz: 6.5 },
+  flights: { rx: 6.5, rz: 6.5 },
+  homestay: { rx: 6.5, rz: 6.5 },
+  cancercost: { rx: 6.5, rz: 6.5 },
+  air: { rx: 6.5, rz: 6.5 },
+  parenting: { rx: 6.5, rz: 6.5 },
 };
 // The meadow is scaled up from the original four-scene island to make room for eight scenes.
-const ISL = 1.7;
+const ISL = 2.6;
 const TOP = 1.2;
 
 // ---------- shaders ----------
@@ -303,6 +324,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   ] as [number, number][]).map(([x, z]) => [x, 0, z] as V3);
   const roadPath = sampleLoop(ROAD_CTRL, 24);
   const outerPath = sampleLoop(OUTER_CTRL, 14);
+  const fringePath = sampleLoop(Array.from({length: 28}, (_,i) => {const a=i/28*Math.PI*2; return [Math.cos(a)*61,0,Math.sin(a)*58] as V3;}), 10);
   const ROAD_COL: V3 = [0.42, 0.42, 0.46];
   const roadAtOn = (path: V3[], u: number): { x: number; z: number; heading: number } => {
     const n = path.length;
@@ -334,11 +356,13 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     };
     strip(roadPath, true);
     strip(outerPath, true);
+    strip(fringePath, true);
     // a spur from the outer loop to each of the newer four scenes
     for (const id of TOUR.slice(4)) {
       const c = SPOTS[id];
-      let best = outerPath[0], bd = 1e9;
-      for (const p of outerPath) {
+      const connectorPath = TOUR.indexOf(id) < 8 ? outerPath : fringePath;
+      let best = connectorPath[0], bd = 1e9;
+      for (const p of connectorPath) {
         const d = Math.hypot(p[0] - c.x, p[2] - c.z);
         if (d < bd) { bd = d; best = p; }
       }
@@ -353,9 +377,9 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   // a few cars on each loop, sparse and unhurried
   const carCols: V3[] = [[0.85, 0.25, 0.2], [0.25, 0.45, 0.85], [0.95, 0.75, 0.2], [0.3, 0.7, 0.45], [0.7, 0.4, 0.8], [0.95, 0.55, 0.25]];
   const carState: { x: number; z: number }[] = [];
-  for (let k = 0; k < 6; k++) {
+  for (let k = 0; k < 9; k++) {
     const g = new GeoBuilder();
-    const col = carCols[k];
+    const col = carCols[k % carCols.length];
     g.box(0.55, 0.22, 1.15, col, T(0, 0.2, 0));               // body
     g.box(0.46, 0.2, 0.55, col, T(0, 0.4, -0.06));            // cabin
     g.box(0.47, 0.12, 0.3, [0.7, 0.85, 0.95], T(0, 0.4, 0.16)); // windshield band
@@ -363,8 +387,8 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       g.cyl(0.11, 0.11, 0.08, 10, [0.15, 0.15, 0.17], m4mul(T(wx, 0.11, wz), m4rotZ(Math.PI / 2)));
     }
     const inner = k < 3;
-    const path = inner ? roadPath : outerPath;
-    const speed = inner ? 0.016 + k * 0.004 : 0.011 + (k - 3) * 0.0025, off = (inner ? k : k - 3) / 3 + (inner ? 0 : 0.17);
+    const path = inner ? roadPath : k < 6 ? outerPath : fringePath;
+    const speed = inner ? 0.016 + k * 0.004 : k < 6 ? 0.011 + (k - 3) * 0.0025 : 0.007 + (k - 6) * 0.0015, off = (k % 3) / 3 + (inner ? 0 : 0.17);
     carState.push({ x: 0, z: 0 });
     ctx.addObj(g, I, {
       update: (t) => {
@@ -439,7 +463,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
         const b = PICK_BOX[id];
         if (Math.hypot(x - SPOTS[id].x, z - SPOTS[id].z) < Math.max(b.rx, b.rz) + 1.6) return false;
       }
-      for (const path of [roadPath, outerPath]) {
+      for (const path of [roadPath, outerPath, fringePath]) {
         for (let i = 0; i < path.length; i += 2) {
           if (Math.hypot(x - path[i][0], z - path[i][2]) < 2.3) return false;
         }
@@ -516,6 +540,16 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   buildCheetah(ctx, SPOTS.cheetah);
   buildInsurance(ctx, SPOTS.insurance);
   buildService(ctx, SPOTS.service);
+  buildNewStory(ctx, SPOTS.puc, 'puc');
+  buildNewStory(ctx, SPOTS.access, 'access');
+  buildNewStory(ctx, SPOTS.consent, 'consent');
+  buildNewStory(ctx, SPOTS.groups, 'groups');
+  buildNewStory(ctx, SPOTS.fog, 'fog');
+  buildNewStory(ctx, SPOTS.flights, 'flights');
+  buildNewStory(ctx, SPOTS.homestay, 'homestay');
+  buildNewStory(ctx, SPOTS.cancercost, 'cancercost');
+  buildNewStory(ctx, SPOTS.air, 'air');
+  buildNewStory(ctx, SPOTS.parenting, 'parenting');
 
   // ---------- per-frame model matrix ----------
   function modelFor(o: Obj, t: number): M4 {
@@ -553,7 +587,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   // ---------- camera: a roaming visitor ----------
   // Each visit: arrive facing the scene's front (headline beat), then slowly
   // circle it to show the sides, pull back, and wander to a random other story.
-  const FAR = 90;
+  const FAR = 135;
   const HOLD = 0.24; // first slice of a dwell: hold the readable framing
   const close = (id: SceneId) => ({ x: SPOTS[id].x, z: SPOTS[id].z + 0.4 });
   const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -581,7 +615,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   function dwellParams(now: number): Dwell {
     const dir = Math.random() < 0.5 ? -1 : 1;
     return {
-      kind: 'dwell', t0: now, dur: rnd(12000, 14500),
+      kind: 'dwell', t0: now, dur: rnd(16000, 19000),
       az0: wrapPi(rnd(-0.4, 0.4)),            // arrive from roughly the front
       sweep: dir * rnd(0.85, 1.45),           // then circle off to one side
       po0: rnd(0.92, 1.04),                   // entry: higher, readable
@@ -817,7 +851,7 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       ty + useDist * Math.cos(polar),
       tz + useDist * Math.sin(polar) * Math.cos(azim),
     ];
-    curProj = m4perspective(0.72, aspect, 2, 260);
+    curProj = m4perspective(0.72, aspect, 2, 650);
     curView = m4lookAt(eye, [tx, ty, tz], [0, 1, 0]);
     const fogK = useDist / 17;
     const fogNear = 24 * fogK, fogFar = 60 * fogK;
@@ -884,7 +918,10 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
 
   // internal test hook for automated checks
   (window as unknown as Record<string, unknown>).__nw = {
-    cam: () => ({ tx, tz, dist, polar, azim, cur, userActive, hold, phase: phase.kind }),
+    cam: () => ({ tx, tz, dist, polar, azim, cur, userActive, hold, phase: phase.kind, duration: phase.dur }),
+    select: (id: SceneId) => ev.onPick(id),
+    spots: SPOTS,
+    next: () => startTravel(performance.now(), nextStory(cur)),
     look: (x: number, z: number, az: number, pol: number, d: number) => {
       tx = x; tz = z; tTx = x; tTz = z;
       azim = az; polar = pol; dist = d; tAzim = az; tPolar = pol; tDist = d;
