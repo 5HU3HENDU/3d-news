@@ -902,10 +902,8 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     const dt = Math.min(0.05, (now - prev) / 1000);
     prev = now;
 
-    // tour control: the camera only wanders again after a full quiet minute,
-    // so it never steals the view while someone is still exploring
-    const idle = now - lastTouch > 60000 && !hold && pointers.size === 0;
-    if (userActive && idle) { userActive = false; resumeFrom(now); }
+    // tour control: the camera roams on its own only until the first touch.
+    // Once someone takes over, the view stays exactly where they leave it.
     if (!userActive && !hold) tourStep(now);
     else if (hold && !userActive) phase.t0 += dt * 1000; // panel open: freeze the tour where it is
 
