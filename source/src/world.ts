@@ -716,12 +716,35 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   function touched() { lastTouch = performance.now(); userActive = true; }
 
   // ---------- input ----------
+  // Manual camera control: drag pans over the meadow, wheel/pinch zooms toward
+  // the point under the cursor or fingers, and both keep a little momentum
+  // after you let go, so movement feels free flowing instead of clamped.
+  const MIN_D = 3.2, MAX_D = 150;
   const pointers = new Map<number, { x: number; y: number }>();
   let downAt = 0, downX = 0, downY = 0, moved = false, pinchD = 0, sawPointer = -1e9;
+  let zVel = 0; // zoom momentum: log-distance per second, decays after the wheel stops
+  let zAnchor: { x: number; z: number } | null = null; // world point the zoom glides toward
+  let pVX = 0, pVZ = 0; // pan momentum: world units per second
+  let lastMoveT = 0;
+  function zoomBy(factor: number, anchor: { x: number; z: number } | null) {
+    const old = tDist;
+    const nd = Math.min(MAX_D, Math.max(MIN_D, old * factor));
+    if (nd === old) { zVel = 0; return; }
+    tDist = nd;
+    const applied = nd / old;
+    if (anchor) {
+      zAnchor = anchor;
+      // keep the anchored spot under the cursor/fingers as we close in on it
+      tTx += (anchor.x - tTx) * (1 - applied);
+      tTz += (anchor.z - tTz) * (1 - applied);
+      tTx = Math.max(-58, Math.min(58, tTx)); tTz = Math.max(-54, Math.min(54, tTz));
+    }
+  }
   function down(x: number, y: number, id: number, isPointer: boolean) {
     if (isPointer) sawPointer = performance.now();
     pointers.set(id, { x, y });
     touched();
+    zVel = 0; pVX = 0; pVZ = 0; lastMoveT = 0;
     if (pointers.size === 1) { downAt = performance.now(); downX = x; downY = y; moved = false; }
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
@@ -732,6 +755,9 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     if (isPointer) sawPointer = performance.now();
     const p = pointers.get(id);
     if (!p) return;
+    const nowT = performance.now();
+    const mdt = lastMoveT > 0 ? Math.min(0.1, (nowT - lastMoveT) / 1000) : 0;
+    lastMoveT = nowT;
     if (pointers.size === 1) {
       const dx = x - p.x, dy = y - p.y;
       if (Math.hypot(x - downX, y - downY) > 7) { moved = true; touched(); }
@@ -739,16 +765,32 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
         // drag pans over the meadow, relative to the current view direction
         const s = dist * 0.0021;
         const ca = Math.cos(tAzim), sa = Math.sin(tAzim);
-        tTx -= (dx * ca + dy * sa * 1.2) * s;
-        tTz -= (-dx * sa + dy * ca * 1.2) * s;
-        tTx = Math.max(-58, Math.min(58, tTx)); tTz = Math.max(-54, Math.min(54, tTz));
+        const wx = -(dx * ca + dy * sa * 1.2) * s;
+        const wz = -(-dx * sa + dy * ca * 1.2) * s;
+        tTx = Math.max(-58, Math.min(58, tTx + wx));
+        tTz = Math.max(-54, Math.min(54, tTz + wz));
+        if (mdt > 0) {
+          const cap = 45;
+          pVX = Math.max(-cap, Math.min(cap, wx / mdt));
+          pVZ = Math.max(-cap, Math.min(cap, wz / mdt));
+        }
       }
     } else if (pointers.size === 2) {
-      p.x = x; p.y = y;
       const [a, b] = [...pointers.values()];
+      const ocx = (a.x + b.x) / 2, ocy = (a.y + b.y) / 2;
+      p.x = x; p.y = y;
+      const ncx = (a.x + b.x) / 2, ncy = (a.y + b.y) / 2;
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      if (pinchD > 0) tDist = Math.min(110, Math.max(7, tDist * (pinchD / d)));
+      // pinch zooms toward the spot between the fingers
+      if (pinchD > 0) zoomBy(pinchD / d, planePoint(ncx, ncy));
       pinchD = d;
+      // two fingers gliding together pan, like a drag
+      const dx = ncx - ocx, dy = ncy - ocy;
+      const s = dist * 0.0021;
+      const ca = Math.cos(tAzim), sa = Math.sin(tAzim);
+      tTx = Math.max(-58, Math.min(58, tTx - (dx * ca + dy * sa * 1.2) * s));
+      tTz = Math.max(-54, Math.min(54, tTz - (-dx * sa + dy * ca * 1.2) * s));
+      pVX = 0; pVZ = 0;
       moved = true; touched();
     }
     p.x = x; p.y = y;
@@ -758,11 +800,20 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     pointers.delete(id);
     lastTouch = performance.now();
     if (!moved && performance.now() - downAt < 450 && pointers.size === 0) pick(x, y);
+    if (pointers.size === 0) {
+      // keep the fling only if the finger was still moving when it lifted
+      if (lastMoveT > 0 && performance.now() - lastMoveT > 90) { pVX = 0; pVZ = 0; }
+      lastMoveT = 0;
+    }
   }
   function onWheel(e: WheelEvent) {
     e.preventDefault();
     touched();
-    tDist = Math.min(110, Math.max(7, tDist * Math.exp(e.deltaY * 0.0012)));
+    const unit = e.deltaMode === 1 ? 16 : 1; // line-mode wheels -> pixels
+    const f = Math.exp(e.deltaY * unit * 0.0013);
+    const old = tDist;
+    zoomBy(f, planePoint(e.clientX, e.clientY));
+    zVel = tDist !== old ? Math.log(tDist / old) / 0.09 : 0; // short glide after the wheel stops
   }
   const pd = (e: PointerEvent) => { try { canvas.setPointerCapture(e.pointerId); } catch { /* noop */ } down(e.clientX, e.clientY, e.pointerId, true); };
   const pm = (e: PointerEvent) => move(e.clientX, e.clientY, e.pointerId, true);
@@ -788,23 +839,27 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     const w = inv[3] * nx + inv[7] * ny + inv[11] * nz + inv[15];
     return [x / w, y / w, z / w];
   }
-  function pick(cx: number, cy: number) {
+  function planePoint(cx: number, cy: number): { x: number; z: number } | null {
     const r = canvas.getBoundingClientRect();
     const nx = ((cx - r.left) / r.width) * 2 - 1;
     const ny = 1 - ((cy - r.top) / r.height) * 2;
     const inv = m4invert(m4mul(curProj, curView));
     const o = unproject(inv, nx, ny, -1), f = unproject(inv, nx, ny, 1);
     const dir = norm3(sub3(f, o));
-    // hit the plane a little above the meadow surface (scene height), then take the nearest patch
+    // hit the plane a little above the meadow surface (scene height)
     const planeY = TOP + 1.2;
-    if (Math.abs(dir[1]) < 1e-5) return;
+    if (Math.abs(dir[1]) < 1e-5) return null;
     const t = (planeY - o[1]) / dir[1];
-    if (t <= 0) return;
-    const hx = o[0] + dir[0] * t, hz = o[2] + dir[2] * t;
+    if (t <= 0) return null;
+    return { x: o[0] + dir[0] * t, z: o[2] + dir[2] * t };
+  }
+  function pick(cx: number, cy: number) {
+    const h = planePoint(cx, cy);
+    if (!h) return;
     let best: SceneId | null = null, bd = 1e9;
     for (const id of TOUR) {
       const b = PICK_BOX[id];
-      const dx = Math.abs(hx - SPOTS[id].x), dz = Math.abs(hz - SPOTS[id].z);
+      const dx = Math.abs(h.x - SPOTS[id].x), dz = Math.abs(h.z - SPOTS[id].z);
       if (dx < b.rx && dz < b.rz) {
         const d = dx / b.rx + dz / b.rz;
         if (d < bd) { bd = d; best = id; }
@@ -836,6 +891,22 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     dist += (tDist - dist) * kt;
     tx += (tTx - tx) * kt;
     tz += (tTz - tz) * kt;
+
+    // free-flow momentum after the fingers or wheel let go
+    if (userActive && pointers.size === 0) {
+      if (zVel !== 0) {
+        zoomBy(Math.exp(zVel * dt), zAnchor);
+        zVel *= Math.exp(-6 * dt);
+        if (Math.abs(zVel) < 0.02) zVel = 0;
+      }
+      if (pVX !== 0 || pVZ !== 0) {
+        tTx = Math.max(-58, Math.min(58, tTx + pVX * dt));
+        tTz = Math.max(-54, Math.min(54, tTz + pVZ * dt));
+        const damp = Math.exp(-3.5 * dt);
+        pVX *= damp; pVZ *= damp;
+        if (Math.abs(pVX) < 0.02 && Math.abs(pVZ) < 0.02) { pVX = 0; pVZ = 0; }
+      }
+    }
 
     for (const h of frameHooks) h(t);
 
