@@ -719,7 +719,14 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   // Manual camera control: drag pans over the meadow, wheel/pinch zooms toward
   // the point under the cursor or fingers, and both keep a little momentum
   // after you let go, so movement feels free flowing instead of clamped.
-  const MIN_D = 3.2, MAX_D = 150;
+  // Zoom limits are real camera distance. Phones dollie the camera out by
+  // 1/fit to fit the world on a narrow screen, so clamp in that real scale -
+  // otherwise a phone could only ever get half as close as a desktop.
+  const MIN_D = 3, MAX_D = 160;
+  function viewFit() {
+    const aspect = (canvas.clientWidth || 1) / Math.max(1, canvas.clientHeight || 1);
+    return Math.min(1, (aspect + 0.35) / 1.65);
+  }
   const pointers = new Map<number, { x: number; y: number }>();
   let downAt = 0, downX = 0, downY = 0, moved = false, pinchD = 0, sawPointer = -1e9;
   let zVel = 0; // zoom momentum: log-distance per second, decays after the wheel stops
@@ -728,7 +735,8 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
   let lastMoveT = 0;
   function zoomBy(factor: number, anchor: { x: number; z: number } | null) {
     const old = tDist;
-    const nd = Math.min(MAX_D, Math.max(MIN_D, old * factor));
+    const fit = viewFit();
+    const nd = Math.min(MAX_D * fit, Math.max(MIN_D * fit, old * factor));
     if (nd === old) { zVel = 0; return; }
     tDist = nd;
     const applied = nd / old;
@@ -762,11 +770,17 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
       const dx = x - p.x, dy = y - p.y;
       if (Math.hypot(x - downX, y - downY) > 7) { moved = true; touched(); }
       if (moved) {
-        // drag pans over the meadow, relative to the current view direction
-        const s = dist * 0.0021;
-        const ca = Math.cos(tAzim), sa = Math.sin(tAzim);
-        const wx = -(dx * ca + dy * sa * 1.2) * s;
-        const wz = -(-dx * sa + dy * ca * 1.2) * s;
+        // drag pans like a map: the ground sticks to the finger
+        const prev = planePoint(p.x, p.y), cur = planePoint(x, y);
+        let wx = 0, wz = 0;
+        if (prev && cur) {
+          wx = -(cur.x - prev.x); wz = -(cur.z - prev.z);
+        } else {
+          const s = (dist / viewFit()) * 0.0021;
+          const ca = Math.cos(tAzim), sa = Math.sin(tAzim);
+          wx = -(dx * ca + dy * sa * 1.2) * s;
+          wz = -(-dx * sa + dy * ca * 1.2) * s;
+        }
         tTx = Math.max(-58, Math.min(58, tTx + wx));
         tTz = Math.max(-54, Math.min(54, tTz + wz));
         if (mdt > 0) {
@@ -778,18 +792,28 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     } else if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
       const ocx = (a.x + b.x) / 2, ocy = (a.y + b.y) / 2;
+      const oAng = Math.atan2(b.y - a.y, b.x - a.x);
       p.x = x; p.y = y;
       const ncx = (a.x + b.x) / 2, ncy = (a.y + b.y) / 2;
+      const nAng = Math.atan2(b.y - a.y, b.x - a.x);
       const d = Math.hypot(a.x - b.x, a.y - b.y);
       // pinch zooms toward the spot between the fingers
       if (pinchD > 0) zoomBy(pinchD / d, planePoint(ncx, ncy));
       pinchD = d;
-      // two fingers gliding together pan, like a drag
-      const dx = ncx - ocx, dy = ncy - ocy;
-      const s = dist * 0.0021;
-      const ca = Math.cos(tAzim), sa = Math.sin(tAzim);
-      tTx = Math.max(-58, Math.min(58, tTx - (dx * ca + dy * sa * 1.2) * s));
-      tTz = Math.max(-54, Math.min(54, tTz - (-dx * sa + dy * ca * 1.2) * s));
+      // twisting the fingers spins the view, like rotating a map
+      tAzim += wrapPi(nAng - oAng);
+      // two fingers gliding together pan, ground tracking the midpoint
+      const prevC = planePoint(ocx, ocy), curC = planePoint(ncx, ncy);
+      if (prevC && curC) {
+        tTx = Math.max(-58, Math.min(58, tTx - (curC.x - prevC.x)));
+        tTz = Math.max(-54, Math.min(54, tTz - (curC.z - prevC.z)));
+      } else {
+        const dx = ncx - ocx, dy = ncy - ocy;
+        const s = (dist / viewFit()) * 0.0021;
+        const ca = Math.cos(tAzim), sa = Math.sin(tAzim);
+        tTx = Math.max(-58, Math.min(58, tTx - (dx * ca + dy * sa * 1.2) * s));
+        tTz = Math.max(-54, Math.min(54, tTz - (-dx * sa + dy * ca * 1.2) * s));
+      }
       pVX = 0; pVZ = 0;
       moved = true; touched();
     }
@@ -878,19 +902,25 @@ export function mountWorld(canvas: HTMLCanvasElement, ev: WorldEvents): WorldHan
     const dt = Math.min(0.05, (now - prev) / 1000);
     prev = now;
 
-    // tour control
-    const idle = now - lastTouch > 9000 && !hold && pointers.size === 0;
+    // tour control: the camera only wanders again after a full quiet minute,
+    // so it never steals the view while someone is still exploring
+    const idle = now - lastTouch > 60000 && !hold && pointers.size === 0;
     if (userActive && idle) { userActive = false; resumeFrom(now); }
     if (!userActive && !hold) tourStep(now);
     else if (hold && !userActive) phase.t0 += dt * 1000; // panel open: freeze the tour where it is
 
     const k = Math.min(1, dt * 7);
     const kt = Math.min(1, dt * 5);
-    azim += (tAzim - azim) * k;
-    polar += (tPolar - polar) * k;
-    dist += (tDist - dist) * kt;
-    tx += (tTx - tx) * kt;
-    tz += (tTz - tz) * kt;
+    if (pointers.size > 0) {
+      // fingers on screen: the view tracks them exactly, no easing lag
+      azim = tAzim; polar = tPolar; dist = tDist; tx = tTx; tz = tTz;
+    } else {
+      azim += (tAzim - azim) * k;
+      polar += (tPolar - polar) * k;
+      dist += (tDist - dist) * kt;
+      tx += (tTx - tx) * kt;
+      tz += (tTz - tz) * kt;
+    }
 
     // free-flow momentum after the fingers or wheel let go
     if (userActive && pointers.size === 0) {

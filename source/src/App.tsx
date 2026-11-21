@@ -45,7 +45,7 @@ function InfoPanel({ onClose }: { onClose: () => void }) {
                 factKnown
                 intro="One floating meadow, nineteen tiny 3D stories. The camera roams by itself: it pulls back, picks a story at random, drops in and slowly circles it."
             />
-            <p className="nw-tap-tip">Drag to look around, pinch or scroll to zoom, tap a scene to read the story and its sources. Cars, a plane and birds pass through now and then; they are just the world being alive.</p>
+            <p className="nw-tap-tip">Drag to roam, pinch or scroll to zoom around your fingers, twist two fingers to spin the view, tap a scene to read the story and its sources. The camera stays where you leave it and wanders again after a quiet minute. Cars, a plane and birds pass through now and then; they are just the world being alive.</p>
             <p className="nw-build">Last build: {BUILD.at}. Each story keeps its own time below; rebuilding the page does not make the news fresher.</p>
             <p className="nw-build">While this page is open it asks your browser to keep the screen awake, so it should not lock mid-tour. Some browsers or battery-saving modes may still ignore the request.</p>
             <Group label="The nineteen stories" heading>
