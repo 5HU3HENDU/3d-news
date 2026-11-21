@@ -6,6 +6,7 @@ import type { Ctx } from '../world';
 import { patch, T } from './common';
 import { IDENT as I, bannerEx, personGeo } from './kit';
 import { fitText, roundRect } from './text';
+import { polyforkSatellite } from './polyforkSat';
 
 type NewId = 'puc' | 'fog' | 'flights' | 'homestay' | 'cancercost' | 'air' | 'antibiotic' | 'signal' | 'voyager' | 'travel' | 'fastag' | 'motor';
 
@@ -265,13 +266,14 @@ export function buildNewStory(ctx: Ctx, at: { x: number; z: number }, id: NewId)
       });
       ctx.addDecal({ tex: t, model: X(0, 3.1, -2.6), w: 7.2, h: 4.5, glow: 0.12 });
     }
-    { // the probe: bus, big dish pointed home, booms
+    { // the probe: Polyfork low-poly comm satellite standing in for Voyager 1 (one-story sample)
       const p = new GeoBuilder();
-      p.box(.7, .7, .7, [.82, .78, .6], T(0, 0, 0));
-      p.cyl(.95, .12, .5, 14, cream, m4mul(T(0, .55, .5), m4rotX(2.2)));  // the dish, aimed back at Earth
-      p.cyl(.03, .03, 2.6, 6, [.6, .6, .66], m4mul(T(0, .1, 0), m4rotZ(Math.PI / 2))); // science boom
-      p.box(1.4, .04, .5, [.28, .34, .5], T(0, -.5, 0));
-      ctx.addObj(p, X(-1.6, 3.1, 1.2), { anim: 'bob', phase: 0, amp: .12 });
+      const S = 3.0; // wingspan in world units; model is normalized, vertically centred below
+      polyforkSatellite(p, m4mul(T(0, -0.518, 0), m4scale(S, S, S)));
+      const base = X(-1.2, 3.8, 1.0);
+      ctx.addObj(p, base, {
+        update: (t: number) => m4mul(T(0, Math.sin(t * 2.1) * 0.12, 0), m4mul(base, m4rotY(t * 0.35))),
+      });
       const gold = new GeoBuilder(); gold.cyl(.3, .3, .05, 16, [.96, .78, .22], m4rotX(Math.PI / 2));
       ctx.addObj(gold, X(-1.6, 3.1, 1.75), { anim: 'spin', amp: .4 }); // the Golden Record
     }
