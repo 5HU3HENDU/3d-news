@@ -6,7 +6,7 @@ import type { Ctx } from '../world';
 import { patch, T } from './common';
 import { IDENT as I, bannerEx, personGeo } from './kit';
 import { fitText, roundRect } from './text';
-import { polyforkSatellite } from './polyforkSat';
+import { polyforkModel } from './polyforkCar';
 
 type NewId = 'puc' | 'fog' | 'flights' | 'homestay' | 'cancercost' | 'air' | 'antibiotic' | 'signal' | 'voyager' | 'travel' | 'fastag' | 'motor';
 
@@ -266,14 +266,13 @@ export function buildNewStory(ctx: Ctx, at: { x: number; z: number }, id: NewId)
       });
       ctx.addDecal({ tex: t, model: X(0, 3.1, -2.6), w: 7.2, h: 4.5, glow: 0.12 });
     }
-    { // the probe: Polyfork low-poly comm satellite standing in for Voyager 1 (one-story sample)
+    { // the probe: bus, big dish pointed home, booms
       const p = new GeoBuilder();
-      const S = 3.0; // wingspan in world units; model is normalized, vertically centred below
-      polyforkSatellite(p, m4mul(T(0, -0.518, 0), m4scale(S, S, S)));
-      const base = X(-1.2, 3.8, 1.0);
-      ctx.addObj(p, base, {
-        update: (t: number) => m4mul(T(0, Math.sin(t * 2.1) * 0.12, 0), m4mul(base, m4rotY(t * 0.35))),
-      });
+      p.box(.7, .7, .7, [.82, .78, .6], T(0, 0, 0));
+      p.cyl(.95, .12, .5, 14, cream, m4mul(T(0, .55, .5), m4rotX(2.2)));  // the dish, aimed back at Earth
+      p.cyl(.03, .03, 2.6, 6, [.6, .6, .66], m4mul(T(0, .1, 0), m4rotZ(Math.PI / 2))); // science boom
+      p.box(1.4, .04, .5, [.28, .34, .5], T(0, -.5, 0));
+      ctx.addObj(p, X(-1.6, 3.1, 1.2), { anim: 'bob', phase: 0, amp: .12 });
       const gold = new GeoBuilder(); gold.cyl(.3, .3, .05, 16, [.96, .78, .22], m4rotX(Math.PI / 2));
       ctx.addObj(gold, X(-1.6, 3.1, 1.75), { anim: 'spin', amp: .4 }); // the Golden Record
     }
@@ -330,9 +329,10 @@ export function buildNewStory(ctx: Ctx, at: { x: number; z: number }, id: NewId)
   } else {
     // motor insurance: the adviser, the family, and the two separate covers
     box(0, .1, 0, 8, .2, 6, [.9, .89, .95]);
-    { // the family car
-      const car = new GeoBuilder(); car.box(2.6, .6, 1.3, [.75, .3, .3], T(0, .6, 0)); car.box(1.4, .55, 1.1, [.63, .83, .9], T(0, 1.15, 0));
-      for (const x of [-.8, .8]) for (const z of [-.6, .6]) car.sphere(.28, 10, 6, dark, T(x, .28, z));
+    { // the family car: Polyfork compact hatchback (one-story sample)
+      const car = new GeoBuilder();
+      // model length runs along +z; turn it so the car faces along x like the old block car
+      polyforkModel(car, m4mul(m4rotY(Math.PI / 2), m4scale(3.3, 3.3, 3.3)));
       ctx.addObj(car, X(-2.2, 0, -1.4));
     }
     const adviser = personGeo([.72, .5, .36], [.25, .3, .5], { paper: true }); ctx.addObj(adviser, X(.4, 0, .4), { anim: 'bob', phase: 0, amp: .02 });

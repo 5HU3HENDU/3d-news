@@ -6,4 +6,4 @@ The original eight scenes remain. Ten additions cover PUC announcements, accessi
 
 `index.html` is the production page served by GitHub Pages. `source/` is the editable Vite project. Run `cd source && npm ci && npm run build`, then copy `dist/index.html` to the repository root. Build time is separate from story report dates. No displayed number is a live feed.
 
-The Voyager 1 scene's probe is a Polyfork sample: "Comm Satellite" (comm-satellite-fdc2cd), CC BY 4.0, credit Polyfork (https://polyfork.dev/asset/comm-satellite-fdc2cd). Baked to code in source/src/scenes/polyforkSat.ts; no runtime download.
+The motor-insurance scene's family car is a Polyfork sample: "Compact Hatchback" (compact-hatchback-386417), CC BY 4.0, credit Polyfork (https://polyfork.dev/asset/compact-hatchback-386417). Baked to code in source/src/scenes/polyforkCar.ts; no runtime download.
